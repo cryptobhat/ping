@@ -115,6 +115,11 @@ export const admin = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  updateUser: (id: string, data: any) =>
+    request<{ success: boolean; data: any }>(`/admin/users/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
   deleteUser: (id: string) =>
     request<{ success: boolean }>(`/admin/users/${id}`, { method: 'DELETE' }),
   verifyUser: (id: string, isVerified: boolean) =>
@@ -136,6 +141,11 @@ export const admin = {
     if (contentType) params.set('contentType', contentType);
     return request<{ success: boolean; data: any[]; pagination: any }>(`/admin/content?${params}`);
   },
+  updateContent: (id: string, data: any) =>
+    request<{ success: boolean; data: any }>(`/admin/content/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
   deleteContent: (id: string) =>
     request<{ success: boolean }>(`/admin/content/${id}`, { method: 'DELETE' }),
   featureContent: (id: string, featured: boolean) =>

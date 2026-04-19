@@ -2,8 +2,6 @@ import prisma from '../config/database';
 import { NotificationService } from './notification.service';
 import { SubscriptionService } from './subscription.service';
 import { CreatorSubscriptionService } from './creator-subscription.service';
-import { TtsService } from './tts.service';
-import { isNarrationEligibleContentType } from '../utils/narration-eligibility';
 import { scheduleUserInterestRefresh } from './recommendation/interest-refresh';
 import { Content, ContentType, ContentVisibility } from '@prisma/client';
 
@@ -158,11 +156,8 @@ export class ContentService {
       },
     });
 
-    // Fire-and-forget: TTS only for stories (including series episodes), not poem/article/quote
-    if (!data.isDraft && isNarrationEligibleContentType(data.contentType)) {
-      TtsService.generateForContent(content.id).catch(() => {});
-
-      // Fire-and-forget: notify all followers about the new content
+    // Fire-and-forget: notify all followers about the new content
+    if (!data.isDraft) {
       NotificationService.notifyFollowersNewContent(
         authorId,
         content.id,

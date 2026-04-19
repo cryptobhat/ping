@@ -4,38 +4,11 @@ import { NotificationService } from '../services/notification.service';
 import { SiteCopyService } from '../services/site-copy.service';
 import { AdminGiftService } from '../services/admin-gift.service';
 import { CreatorSubscriptionService } from '../services/creator-subscription.service';
-import { TtsService } from '../services/tts.service';
 import { BannerService } from '../services/banner.service';
 import prisma from '../config/database';
-import { ContentType } from '@prisma/client';
 import { AuthRequest } from '../utils/jwt';
 import { successResponse, paginatedResponse, errorResponse, clampLimit } from '../utils/response';
 
-/** Trigger TTS audio generation for a specific content or all missing */
-export const generateAudio = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { contentId } = req.params;
-    if (contentId) {
-      TtsService.generateForContent(contentId).catch(() => {});
-      successResponse(res, null, `Audio generation queued for ${contentId}`);
-    } else {
-      // Generate for all published content without audio (limit 10 at a time)
-      const contents = await prisma.content.findMany({
-        where: {
-          isDraft: false,
-          audioUrl: null,
-          visibility: 'PUBLIC',
-          contentType: ContentType.STORY,
-        },
-        select: { id: true },
-        take: 10,
-        orderBy: { createdAt: 'desc' },
-      });
-      contents.forEach((c) => TtsService.generateForContent(c.id).catch(() => {}));
-      successResponse(res, { queued: contents.length }, `Audio generation queued for ${contents.length} content items`);
-    }
-  } catch (error) { next(error); }
-};
 
 export const getAllUsers = async (
   req: AuthRequest,
@@ -83,6 +56,42 @@ export const deleteUser = async (
     successResponse(res, result);
   } catch (error: any) {
     if (error.message === 'User not found') {
+      errorResponse(res, error.message, 404);
+      return;
+    }
+    next(error);
+  }
+};
+
+export const updateUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const user = await AdminService.updateUser(id, req.body);
+    successResponse(res, user, "User updated");
+  } catch (error: any) {
+    if (error.message === "User not found") {
+      errorResponse(res, error.message, 404);
+      return;
+    }
+    next(error);
+  }
+};
+
+export const updateContent = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const content = await AdminService.updateContent(id, req.body);
+    successResponse(res, content, "Content updated");
+  } catch (error: any) {
+    if (error.message === "Content not found") {
       errorResponse(res, error.message, 404);
       return;
     }

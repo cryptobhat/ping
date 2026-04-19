@@ -18,6 +18,13 @@ export default function ContentPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [actionError, setActionError] = useState('');
 
+  // Edit modal state
+  const [editItem, setEditItem] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '', categoryId: '', visibility: 'PUBLIC', isDraft: false });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
+
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
@@ -33,9 +40,22 @@ export default function ContentPage() {
     }
   }, [page, contentType]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await admin.getCategories();
+      setCategories(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch categories', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchContent();
   }, [fetchContent]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
@@ -69,6 +89,40 @@ export default function ContentPage() {
       fetchContent();
     } catch (err: any) {
       setActionError(err.message || 'Could not update premium status. Please try again.');
+    }
+  };
+
+  const openEditModal = (item: any) => {
+    setEditItem(item);
+    setEditForm({
+      title: item.title || '',
+      description: item.description || '',
+      categoryId: item.categoryId || item.category?.id || '',
+      visibility: item.visibility || 'PUBLIC',
+      isDraft: item.isDraft ?? (item.status === 'DRAFT'),
+    });
+    setEditError('');
+  };
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editItem) return;
+    setEditLoading(true);
+    setEditError('');
+    try {
+      await admin.updateContent(editItem.id, {
+        title: editForm.title,
+        description: editForm.description,
+        categoryId: editForm.categoryId || undefined,
+        visibility: editForm.visibility,
+        isDraft: editForm.isDraft,
+      });
+      setEditItem(null);
+      fetchContent();
+    } catch (err: any) {
+      setEditError(err.message || 'Failed to update content');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -181,12 +235,20 @@ export default function ContentPage() {
                       </td>
                       <td className="table-cell">{formatDate(item.createdAt)}</td>
                       <td className="table-cell">
-                        <button
-                          onClick={() => setDeleteId(item.id)}
-                          className="text-xs text-red-600 hover:text-red-800"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openEditModal(item)}
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteId(item.id)}
+                            className="text-xs text-red-600 hover:text-red-800"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -198,6 +260,7 @@ export default function ContentPage() {
         )}
       </div>
 
+      {/* Delete Modal */}
       <Modal open={!!deleteId} onClose={() => { setDeleteId(null); setActionError(''); }} title="Delete Content">
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
@@ -225,6 +288,75 @@ export default function ContentPage() {
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Edit Content Modal */}
+      <Modal open={!!editItem} onClose={() => { setEditItem(null); setEditError(''); }} title="Edit Content">
+        <form onSubmit={handleEditSave} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Title</label>
+            <input
+              type="text"
+              className="input"
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              className="input min-h-[80px]"
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Category</label>
+            <select
+              className="input"
+              value={editForm.categoryId}
+              onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value })}
+            >
+              <option value="">No Category</option>
+              {categories.map((cat: any) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Visibility</label>
+            <select
+              className="input"
+              value={editForm.visibility}
+              onChange={(e) => setEditForm({ ...editForm, visibility: e.target.value })}
+            >
+              <option value="PUBLIC">PUBLIC</option>
+              <option value="PRIVATE">PRIVATE</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="editDraft"
+              checked={editForm.isDraft}
+              onChange={(e) => setEditForm({ ...editForm, isDraft: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            <label htmlFor="editDraft" className="text-sm font-medium text-gray-700">Draft (unpublished)</label>
+          </div>
+          {editError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{editError}</p>}
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => { setEditItem(null); setEditError(''); }} className="btn-secondary" disabled={editLoading}>
+              Cancel
+            </button>
+            <button type="submit" disabled={editLoading} className="btn-primary">
+              {editLoading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

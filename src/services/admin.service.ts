@@ -82,6 +82,62 @@ export class AdminService {
     return { message: 'User deactivated' };
   }
 
+  static async updateUser(userId: string, data: {
+    name?: string;
+    username?: string;
+    phone?: string;
+    role?: string;
+    isPremium?: boolean;
+    coinsBalance?: number;
+  }) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+
+    const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.username !== undefined) updateData.username = data.username.toLowerCase();
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.role !== undefined) updateData.role = data.role;
+    if (data.isPremium !== undefined) updateData.isPremium = data.isPremium;
+    if (data.coinsBalance !== undefined) updateData.coinsBalance = data.coinsBalance;
+
+    return prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true, phone: true, username: true, name: true, role: true,
+        isPremium: true, coinsBalance: true, isVerified: true, isActive: true,
+      },
+    });
+  }
+
+  static async updateContent(contentId: string, data: {
+    title?: string;
+    description?: string;
+    categoryId?: string;
+    visibility?: string;
+    isDraft?: boolean;
+  }) {
+    const content = await prisma.content.findUnique({ where: { id: contentId } });
+    if (!content) throw new Error("Content not found");
+
+    const updateData: any = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
+    if (data.visibility !== undefined) updateData.visibility = data.visibility;
+    if (data.isDraft !== undefined) updateData.isDraft = data.isDraft;
+
+    return prisma.content.update({
+      where: { id: contentId },
+      data: updateData,
+      include: {
+        author: { select: { id: true, username: true, name: true } },
+        category: { select: { id: true, name: true } },
+      },
+    });
+  }
+
   static async setUserVerified(userId: string, isVerified: boolean) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');

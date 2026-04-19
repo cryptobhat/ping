@@ -121,7 +121,6 @@ import feedRoutes from './routes/feed.routes';
 import aiWritingRoutes from './routes/ai-writing.routes';
 import liveRoomRoutes from './routes/live-room.routes';
 import bannerRoutes from './routes/banner.routes';
-import narrationRoutes from './routes/narration.routes';
 
 // Public config endpoints (no auth required)
 app.get('/api/v1/config/languages', async (_req, res) => {
@@ -174,7 +173,6 @@ app.use('/api/v1/feed', feedRoutes);
 app.use('/api/v1/ai/writing', aiWritingRoutes);
 app.use('/api/v1/live', liveRoomRoutes);
 app.use('/api/v1/banners', bannerRoutes);
-app.use('/api/v1/narration', narrationRoutes);
 
 // Sentry must be set up before the error handler to capture errors
 if (process.env.SENTRY_DSN) {

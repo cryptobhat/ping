@@ -12,14 +12,14 @@ router.get('/users', adminController.getAllUsers);
 router.get('/users/duplicate-ips', adminController.getDuplicateIPs);
 router.post('/users', adminController.createUser);
 router.delete('/users/:id', adminController.deleteUser);
+router.put('/users/:id', adminController.updateUser);
 router.put('/users/:id/verify', adminController.verifyUser);
 
 router.get('/content', adminController.getAllContent);
+router.put('/content/:id', adminController.updateContent);
 router.delete('/content/:id', adminController.deleteContent);
 router.put('/content/:id/feature', adminController.featureContent);
 router.put('/content/:id/premium', adminController.setPremiumContent);
-router.post('/content/:contentId/generate-audio', adminController.generateAudio);
-router.post('/content/generate-audio-batch', adminController.generateAudio);
 
 router.get('/categories', adminController.getCategories);
 router.post('/categories', adminController.createCategory);

@@ -23,6 +23,12 @@ export default function UsersPage() {
   const [duplicateIPs, setDuplicateIPs] = useState<any[]>([]);
   const [showDuplicates, setShowDuplicates] = useState(false);
 
+  // Edit modal state
+  const [editUser, setEditUser] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', username: '', phone: '', role: 'USER', isPremium: false, coinsBalance: 0 });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -85,6 +91,42 @@ export default function UsersPage() {
       setError(err.message || 'Failed to create user');
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const openEditModal = (user: any) => {
+    setEditUser(user);
+    setEditForm({
+      name: user.name || '',
+      username: user.username || '',
+      phone: user.phone || '',
+      role: user.role || 'USER',
+      isPremium: user.isPremium || false,
+      coinsBalance: user.coinsBalance ?? 0,
+    });
+    setEditError('');
+  };
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editUser) return;
+    setEditLoading(true);
+    setEditError('');
+    try {
+      await admin.updateUser(editUser.id, {
+        name: editForm.name,
+        username: editForm.username,
+        phone: editForm.phone,
+        role: editForm.role,
+        isPremium: editForm.isPremium,
+        coinsBalance: Number(editForm.coinsBalance),
+      });
+      setEditUser(null);
+      fetchUsers();
+    } catch (err: any) {
+      setEditError(err.message || 'Failed to update user');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -232,12 +274,20 @@ export default function UsersPage() {
                       <td className="table-cell">{user.loginCount ?? 0}</td>
                       <td className="table-cell">{formatDate(user.createdAt)}</td>
                       <td className="table-cell">
-                        <button
-                          onClick={() => setDeleteId(user.id)}
-                          className="text-xs text-red-600 hover:text-red-800"
-                        >
-                          Deactivate
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openEditModal(user)}
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteId(user.id)}
+                            className="text-xs text-red-600 hover:text-red-800"
+                          >
+                            Deactivate
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -294,6 +344,7 @@ export default function UsersPage() {
         )}
       </div>
 
+      {/* Deactivate Modal */}
       <Modal open={!!deleteId} onClose={() => { setDeleteId(null); setDeleteError(''); }} title="Deactivate User">
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
@@ -323,6 +374,7 @@ export default function UsersPage() {
         </div>
       </Modal>
 
+      {/* Create User Modal */}
       <Modal open={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create User">
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
@@ -365,6 +417,79 @@ export default function UsersPage() {
             </button>
             <button type="submit" disabled={createLoading} className="btn-primary">
               {createLoading ? 'Creating...' : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal open={!!editUser} onClose={() => { setEditUser(null); setEditError(''); }} title="Edit User">
+        <form onSubmit={handleEditSave} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Name</label>
+            <input
+              type="text"
+              className="input"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Username</label>
+            <input
+              type="text"
+              className="input"
+              value={editForm.username}
+              onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Phone</label>
+            <input
+              type="tel"
+              className="input"
+              value={editForm.phone}
+              onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Role</label>
+            <select
+              className="input"
+              value={editForm.role}
+              onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+            >
+              <option value="USER">USER</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="editPremium"
+              checked={editForm.isPremium}
+              onChange={(e) => setEditForm({ ...editForm, isPremium: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            <label htmlFor="editPremium" className="text-sm font-medium text-gray-700">Premium User</label>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Coins Balance</label>
+            <input
+              type="number"
+              className="input"
+              value={editForm.coinsBalance}
+              onChange={(e) => setEditForm({ ...editForm, coinsBalance: parseInt(e.target.value) || 0 })}
+              min={0}
+            />
+          </div>
+          {editError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{editError}</p>}
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => { setEditUser(null); setEditError(''); }} className="btn-secondary" disabled={editLoading}>
+              Cancel
+            </button>
+            <button type="submit" disabled={editLoading} className="btn-primary">
+              {editLoading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
