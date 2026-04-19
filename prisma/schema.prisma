@@ -167,7 +167,6 @@ model User {
   isCreatorEligible        Boolean                   @default(false)
   creatorSubscribers       CreatorSubscription[]      @relation("CreatorSubscribers")
   creatorSubscriptions     CreatorSubscription[]      @relation("SubscriberSubscriptions")
-  narrationStories         NarrationStory[]
   paymentAttempts          PaymentAttempt[]
 
   @@index([phone])
@@ -201,7 +200,6 @@ model Content {
   allowComments Boolean           @default(true)
   membersOnly   Boolean           @default(false)
   unlockPrice   Int?
-  audioUrl      String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -223,7 +221,6 @@ model Content {
   seriesItems        SeriesItem[]
   competitionEntries CompetitionEntry[]
   contentUnlocks     ContentUnlock[]
-  narrationChapters  NarrationChapter[]
 
   @@index([authorId])
   @@index([categoryId])
@@ -1205,220 +1202,6 @@ model ContentUnlock {
   @@unique([userId, contentId])
   @@index([contentId])
   @@map("content_unlocks")
-}
-
-// ---- Kannada / multi-language narration pipeline (Gemini + Sarvam + ffmpeg) ----
-
-enum NarrationJobStatus {
-  QUEUED
-  RUNNING
-  COMPLETED
-  FAILED
-  CANCELLED
-}
-
-enum NarrationJobStage {
-  IDLE
-  GEMINI_PREPROCESS
-  TTS_SEGMENTS
-  FFMPEG_COMPOSE
-  UPLOAD_FINALIZE
-  DONE
-}
-
-enum NarrationSegmentRole {
-  narration
-  dialogue
-}
-
-enum NarrationSegmentTtsStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
-enum NarrationAudioAssetKind {
-  SEGMENT_RAW
-  SEGMENT_MASTER
-  CHAPTER_MASTER
-  CHAPTER_DELIVERY
-  WAVEFORM_META
-}
-
-model NarrationStory {
-  id                  String   @id @default(uuid())
-  ownerId             String
-  title               String
-  genre               String?
-  narratorGenderPref  String   @default("any") // male | female | any
-  dialectColloquial   Boolean  @default(true)
-  bgmDefaultEnabled   Boolean  @default(true)
-  sfxDefaultEnabled   Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  owner    User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  chapters NarrationChapter[]
-
-  @@index([ownerId])
-  @@map("narration_stories")
-}
-
-model NarrationChapter {
-  id             String   @id @default(uuid())
-  storyId        String
-  chapterNumber  Int      @default(1)
-  title          String?
-  rawText        String   @db.Text
-  contentId      String?  // optional link to published Content.body
-  metadata       Json     @default("{}")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  story          NarrationStory   @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  content        Content?         @relation(fields: [contentId], references: [id], onDelete: SetNull)
-  jobs           NarrationJob[]
-
-  @@unique([storyId, chapterNumber])
-  @@index([contentId])
-  @@map("narration_chapters")
-}
-
-model NarrationJob {
-  id              String              @id @default(uuid())
-  chapterId       String
-  status          NarrationJobStatus  @default(QUEUED)
-  currentStage    NarrationJobStage   @default(IDLE)
-  retryCount      Int                 @default(0)
-  errorMessage    String?
-  errorStage      NarrationJobStage?
-  geminiJson      Json? // validated structured output
-  stageTimingsMs  Json                @default("{}") // { "GEMINI_PREPROCESS": 1234, ... }
-  masterAssetId   String?             @unique
-  deliveryAssetId String?             @unique
-  waveformMeta    Json?
-  startedAt       DateTime?
-  finishedAt      DateTime?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-
-  chapter       NarrationChapter      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  segments      NarrationSegment[]
-  logs          NarrationJobLog[]
-  audioAssets   NarrationAudioAsset[] @relation("JobAudioAssets")
-  masterAsset   NarrationAudioAsset?  @relation("JobMasterAsset", fields: [masterAssetId], references: [id], onDelete: SetNull)
-  deliveryAsset NarrationAudioAsset?  @relation("JobDeliveryAsset", fields: [deliveryAssetId], references: [id], onDelete: SetNull)
-
-  @@index([chapterId, status])
-  @@index([status, createdAt])
-  @@map("narration_jobs")
-}
-
-model NarrationSegment {
-  id                 String                   @id @default(uuid())
-  jobId              String
-  segmentIndex       Int
-  role               NarrationSegmentRole
-  speaker            String
-  emotion            String
-  pauseAfterMs       Int                      @default(0)
-  speed              Float                    @default(1.0)
-  bgmTag             String
-  sfxTag             String
-  originalText       String                   @db.Text
-  normalizedTtsText  String                   @db.Text
-  ttsStatus          NarrationSegmentTtsStatus @default(PENDING)
-  ttsRetryCount      Int                      @default(0)
-  ttsErrorMessage    String?
-  durationMs         Int?
-  idempotencyKey     String?                  @unique
-  audioAssetId       String?                  @unique
-  createdAt          DateTime                 @default(now())
-  updatedAt          DateTime                 @updatedAt
-
-  job        NarrationJob          @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  audioAsset NarrationAudioAsset?  @relation(fields: [audioAssetId], references: [id], onDelete: SetNull)
-
-  @@unique([jobId, segmentIndex])
-  @@index([jobId, ttsStatus])
-  @@map("narration_segments")
-}
-
-model PronunciationLexicon {
-  id               String   @id @default(uuid())
-  rawToken         String
-  normalizedToken  String
-  spokenOverride   String?
-  dialect          String   @default("general")
-  notes            String?
-  priority         Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@unique([rawToken, dialect])
-  @@index([rawToken])
-  @@map("pronunciation_lexicon")
-}
-
-model NarrationAudioAsset {
-  id          String                   @id @default(uuid())
-  jobId       String?
-  kind        NarrationAudioAssetKind
-  storageKey  String
-  format      String // wav | mp3 | aac | json
-  bitrate     Int?
-  durationMs  Int?
-  checksum    String? // sha256 hex
-  provider    String // sarvam | ffmpeg | internal
-  createdAt   DateTime                 @default(now())
-
-  job              NarrationJob?       @relation("JobAudioAssets", fields: [jobId], references: [id], onDelete: Cascade)
-  segment          NarrationSegment?
-  masterForJob     NarrationJob?       @relation("JobMasterAsset")
-  deliveryForJob   NarrationJob?       @relation("JobDeliveryAsset")
-
-  @@index([jobId, kind])
-  @@index([storageKey])
-  @@map("narration_audio_assets")
-}
-
-model NarrationBgmAsset {
-  id            String   @id @default(uuid())
-  tag           String   @unique // e.g. calm_pad, tension_drone
-  storageKey    String
-  defaultGainDb Float    @default(-18)
-  loop          Boolean  @default(true)
-  durationMs    Int?
-  createdAt     DateTime @default(now())
-
-  @@map("narration_bgm_assets")
-}
-
-model NarrationSfxAsset {
-  id            String   @id @default(uuid())
-  tag           String   @unique
-  storageKey    String
-  defaultGainDb Float    @default(-12)
-  durationMs    Int?
-  createdAt     DateTime @default(now())
-
-  @@map("narration_sfx_assets")
-}
-
-model NarrationJobLog {
-  id        String   @id @default(uuid())
-  jobId     String
-  stage     String
-  level     String   @default("info") // info | warn | error
-  message   String
-  meta      Json?
-  createdAt DateTime @default(now())
-
-  job NarrationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  @@index([jobId, createdAt])
-  @@map("narration_job_logs")
 }
 
 // ── Payment Orchestration ──

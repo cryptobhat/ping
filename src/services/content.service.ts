@@ -69,7 +69,6 @@ export const publicContentListSelect = {
   membersOnly: true,
   unlockPrice: true,
   allowComments: true,
-  audioUrl: true,
   createdAt: true,
   updatedAt: true,
   author: {
