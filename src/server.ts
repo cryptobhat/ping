@@ -5,6 +5,7 @@ import app from './app';
 import prisma from './config/database';
 import { initializeWebSocket } from './websocket/socket';
 import { shutdownAnalytics } from './services/analytics.service';
+import { TrendingService } from './services/trending.service';
 const PORT = process.env.PORT || 3000;
 
 let httpServer: http.Server;
@@ -35,6 +36,35 @@ main().catch(async (e) => {
   await prisma.$disconnect();
   process.exit(1);
 });
+
+
+// ==========================================
+// Trending recalculation scheduler (every 6 hours)
+// ==========================================
+const SIX_HOURS = 6 * 60 * 60 * 1000;
+
+setInterval(async () => {
+  try {
+    await TrendingService.calculateAllTrending('daily');
+    await TrendingService.calculateAllTrending('weekly');
+    await TrendingService.calculateAllTrending('monthly');
+    console.log('[Trending] Recalculated all time windows');
+  } catch (err) {
+    console.error('[Trending] Recalculation failed:', err);
+  }
+}, SIX_HOURS);
+
+// Run once on startup after a 30-second delay
+setTimeout(async () => {
+  try {
+    await TrendingService.calculateAllTrending('daily');
+    await TrendingService.calculateAllTrending('weekly');
+    await TrendingService.calculateAllTrending('monthly');
+    console.log('[Trending] Initial calculation complete');
+  } catch (err) {
+    console.error('[Trending] Initial calculation failed:', err);
+  }
+}, 30_000);
 
 let isShuttingDown = false;
 

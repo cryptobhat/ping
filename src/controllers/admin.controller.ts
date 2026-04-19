@@ -980,3 +980,150 @@ export const deleteBanner = async (
     next(error);
   }
 };
+// ==========================================
+// Trending Override
+// ==========================================
+
+export const pinTrending = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { contentId } = req.params;
+    const { position, timeWindow } = req.body;
+    const tw = timeWindow || 'daily';
+    const pos = position || 1;
+
+    const content = await prisma.content.findUnique({ where: { id: contentId }, select: { id: true } });
+    if (!content) {
+      errorResponse(res, 'Content not found', 404);
+      return;
+    }
+
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const entry = await prisma.trendingContent.upsert({
+      where: { contentId_timeWindow: { contentId, timeWindow: tw } },
+      create: {
+        contentId,
+        trendingScore: 999999,
+        viewVelocity: 0,
+        engagementRate: 0,
+        recencyFactor: 1,
+        timeWindow: tw,
+        rankPosition: pos,
+        expiresAt,
+      },
+      update: {
+        trendingScore: 999999,
+        rankPosition: pos,
+        expiresAt,
+        calculatedAt: new Date(),
+      },
+    });
+
+    successResponse(res, entry, 'Content pinned to trending');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unpinTrending = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { contentId } = req.params;
+    const timeWindow = (req.query.timeWindow as string) || 'daily';
+
+    await prisma.trendingContent.deleteMany({
+      where: { contentId, timeWindow },
+    });
+
+    successResponse(res, null, 'Content unpinned from trending');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ==========================================
+// Hashtag Management
+// ==========================================
+
+export const listHashtags = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = clampLimit(parseInt(req.query.limit as string) || 20);
+    const skip = (page - 1) * limit;
+
+    const [hashtags, total] = await Promise.all([
+      prisma.hashtag.findMany({
+        orderBy: { count: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.hashtag.count(),
+    ]);
+
+    paginatedResponse(res, hashtags, page, limit, total);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteHashtag = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const hashtag = await prisma.hashtag.findUnique({ where: { id } });
+    if (!hashtag) {
+      errorResponse(res, 'Hashtag not found', 404);
+      return;
+    }
+
+    // Delete all content links first, then the hashtag
+    await prisma.$transaction([
+      prisma.contentHashtag.deleteMany({ where: { hashtagId: id } }),
+      prisma.hashtag.delete({ where: { id } }),
+    ]);
+
+    successResponse(res, null, 'Hashtag deleted');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const featureHashtag = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { isTrending } = req.body;
+
+    const hashtag = await prisma.hashtag.findUnique({ where: { id } });
+    if (!hashtag) {
+      errorResponse(res, 'Hashtag not found', 404);
+      return;
+    }
+
+    const updated = await prisma.hashtag.update({
+      where: { id },
+      data: { isTrending: typeof isTrending === 'boolean' ? isTrending : !hashtag.isTrending },
+    });
+
+    successResponse(res, updated, updated.isTrending ? 'Hashtag featured' : 'Hashtag unfeatured');
+  } catch (error) {
+    next(error);
+  }
+};

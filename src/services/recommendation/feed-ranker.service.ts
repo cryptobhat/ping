@@ -11,6 +11,7 @@ const W_TAG = parseFloat(process.env.FEED_RANK_TAG || '1.2');
 const W_RECENCY = parseFloat(process.env.FEED_RANK_RECENCY || '8');
 const W_ENGAGEMENT = parseFloat(process.env.FEED_RANK_ENGAGEMENT || '1.5');
 const W_EXPLORE = parseFloat(process.env.FEED_RANK_EXPLORE_NOISE || '2.2');
+const W_READ_TIME = parseFloat(process.env.FEED_RANK_READ_TIME || '1.8');
 
 const CANDIDATE_CAP = parseInt(process.env.FEED_RANK_CANDIDATE_POOL || '420', 10);
 
@@ -50,6 +51,12 @@ function scoreItem(row: ContentRow, taste: UserTasteProfile): number {
 
   s += W_RECENCY * recencyScore(row.publishedAt);
   s += W_ENGAGEMENT * Math.log1p(row.likeCount || 0);
+
+  // Boost content from authors the user has spent significant reading time with
+  const readTimeMinutes = taste.readTimeByAuthor?.get(row.authorId) || 0;
+  if (readTimeMinutes >= 5) {
+    s += W_READ_TIME * Math.log1p(readTimeMinutes / 5);
+  }
 
   if (W_EXPLORE > 0) {
     s += Math.random() * W_EXPLORE;

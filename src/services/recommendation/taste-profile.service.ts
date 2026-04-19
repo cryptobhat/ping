@@ -24,6 +24,8 @@ export type UserTasteProfile = {
   typeAffinity: Map<string, number>;
   tagAffinity: Map<string, number>;
   followedAuthorIds: Set<string>;
+  /** Cumulative reading time per author in minutes. */
+  readTimeByAuthor: Map<string, number>;
   /** From persisted UserInterest (JSON arrays). */
   interestTags: Set<string>;
   interestTypes: Set<string>;
@@ -41,6 +43,7 @@ export class TasteProfileService {
     const tagAffinity = new Map<string, number>();
     const readContentIds = new Set<string>();
     const langFreq: Record<string, number> = {};
+    const readTimeByAuthor = new Map<string, number>();
 
     const sessions = await prisma.readingSession.findMany({
       where: { userId, durationSeconds: { gte: 15 } },
@@ -72,6 +75,11 @@ export class TasteProfileService {
 
       const c = s.content;
       addTo(authorAffinity, c.authorId, w);
+      // Accumulate reading time in minutes per author
+      if (c.authorId) {
+        const prevMin = readTimeByAuthor.get(c.authorId) || 0;
+        readTimeByAuthor.set(c.authorId, prevMin + s.durationSeconds / 60);
+      }
       addTo(categoryAffinity, c.categoryId, w * 1.2);
       addTo(typeAffinity, c.contentType, w);
       langFreq[c.language] = (langFreq[c.language] || 0) + w;
@@ -214,6 +222,7 @@ export class TasteProfileService {
     return {
       userId,
       readContentIds,
+      readTimeByAuthor,
       preferredLanguage,
       authorAffinity,
       categoryAffinity,

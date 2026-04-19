@@ -79,4 +79,14 @@ router.post('/banners', adminController.createBanner);
 router.put('/banners/:id', adminController.updateBanner);
 router.delete('/banners/:id', adminController.deleteBanner);
 
+
+// Trending override
+router.put('/trending/:contentId/pin', adminController.pinTrending);
+router.delete('/trending/:contentId/unpin', adminController.unpinTrending);
+
+// Hashtag management
+router.get('/hashtags', adminController.listHashtags);
+router.delete('/hashtags/:id', adminController.deleteHashtag);
+router.put('/hashtags/:id/feature', adminController.featureHashtag);
+
 export default router;
