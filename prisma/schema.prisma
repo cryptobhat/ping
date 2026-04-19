@@ -1,0 +1,1474 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ContentVisibility {
+  PUBLIC
+  PRIVATE
+  FOLLOWERS
+}
+
+enum ContentType {
+  QUOTE
+  STORY
+  POEM
+  ARTICLE
+}
+
+enum TransactionType {
+  PURCHASE
+  GIFT_SENT
+  GIFT_RECEIVED
+  SUPPORT
+  SUBSCRIPTION
+  REFUND
+  PEN_PURCHASE
+  PEN_REDEEM
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentAttemptStatus {
+  INITIATED
+  PROCESSING
+  CAPTURED
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  GIFT
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  MODERATOR
+  CONTENT_MANAGER
+  SUPPORT
+}
+
+enum CampaignType {
+  DISCOUNT
+  REFERRAL
+  FEATURED
+  ADS
+}
+
+enum AdType {
+  BANNER
+  INTERSTITIAL
+  NATIVE
+}
+
+enum AdPlacement {
+  HOME_FEED
+  CONTENT_PAGE
+  PROFILE
+  SEARCH_RESULTS
+}
+
+model User {
+  id            String    @id @default(uuid())
+  phone         String?   @unique
+  email         String?   @unique
+  googleId      String?   @unique
+  facebookId    String?   @unique
+  authProvider  String    @default("phone") // "phone" | "google" | "facebook"
+  username      String    @unique
+  name          String
+  bio           String?
+  profileImage  String?
+  coverImage    String?
+  website       String?
+  location      String?
+  dob           DateTime?
+  isVerified    Boolean   @default(false)
+  isPremium     Boolean   @default(false)
+  isCreator     Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  visibility    String    @default("public")
+  language      String    @default("kn")
+  coinsBalance  Int       @default(0)
+  pensBalance   Int       @default(0)
+  walletBalance Decimal   @default(0) @db.Decimal(12, 2)
+  role          UserRole  @default(USER)
+  jwtVersion    Int       @default(0)
+  referralCode  String?   @unique
+  referredById  String?
+  lastLoginIp   String?
+  lastLoginAt   DateTime?
+  lastDevice    String?
+  loginCount    Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  referredBy               User?                     @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals                User[]                    @relation("UserReferrals")
+  sentReferrals            Referral[]                @relation("ReferrerReferrals")
+  receivedReferral         Referral?                 @relation("ReferredReferrals")
+  content                  Content[]
+  likes                    Like[]
+  followers                Follow[]                  @relation("UserFollowers")
+  following                Follow[]                  @relation("UserFollowing")
+  sentGifts                UserGift[]                @relation("SentGifts")
+  receivedGifts            UserGift[]                @relation("ReceivedGifts")
+  sentSupports             Support[]                 @relation("SentSupports")
+  receivedSupports         Support[]                 @relation("ReceivedSupports")
+  transactions             Transaction[]
+  subscriptions            UserSubscription[]
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]                 @relation("SentMessages")
+  otps                     OtpVerification[]
+  readingSessions          ReadingSession[]
+  readingStats             ReadingStats?
+  dailyReadingLog          DailyReadingLog[]
+  interests                UserInterest?
+  recommendations          ContentRecommendation[]
+  notifications            Notification[]
+  comments                 Comment[]
+  commentLikes             CommentLike[]
+  bookmarks                Bookmark[]
+  favorites                Favorite[]
+  ratings                  Rating[]
+  receivedRatings          Rating[]                  @relation("ReceivedRatings")
+  walletTransactions       WalletTransaction[]
+  quoteDrafts              QuoteDraft[]
+  reports                  Report[]                  @relation("UserReports")
+  contentReports           ContentReport[]           @relation("UserContentReports")
+  verificationRequests     VerificationRequest[]
+  series                   Series[]
+  seriesFollows            SeriesFollow[]
+  competitionEntries       CompetitionEntry[]
+  reportsResolved          Report[]                  @relation("ReportResolvedByUser")
+  contentUnlocks           ContentUnlock[]
+  creatorPriceINR          Int?
+  isCreatorEligible        Boolean                   @default(false)
+  creatorSubscribers       CreatorSubscription[]      @relation("CreatorSubscribers")
+  creatorSubscriptions     CreatorSubscription[]      @relation("SubscriberSubscriptions")
+  narrationStories         NarrationStory[]
+  paymentAttempts          PaymentAttempt[]
+
+  @@index([phone])
+  @@index([username])
+  @@map("users")
+}
+
+model Content {
+  id            String            @id @default(uuid())
+  authorId      String
+  title         String?
+  body          String
+  coverImage    String?
+  description   String?
+  images        String[]          @default([])
+  contentType   ContentType
+  categoryId    String?
+  visibility    ContentVisibility @default(PUBLIC)
+  language      String            @default("kn")
+  isDraft       Boolean           @default(false)
+  publishedAt   DateTime?
+  readTime      Int?
+  viewCount     Int               @default(0)
+  likeCount     Int               @default(0)
+  shareCount    Int               @default(0)
+  commentCount  Int               @default(0)
+  bookmarkCount Int               @default(0)
+  favoriteCount Int               @default(0)
+  isFeatured    Boolean           @default(false)
+  isPremium     Boolean           @default(false)
+  allowComments Boolean           @default(true)
+  membersOnly   Boolean           @default(false)
+  unlockPrice   Int?
+  audioUrl      String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  author             User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category           Category?               @relation(fields: [categoryId], references: [id])
+  likes              Like[]
+  supporters         Support[]
+  readingSessions    ReadingSession[]
+  trending           TrendingContent[]
+  analysis           ContentAnalysis?
+  recommendations    ContentRecommendation[]
+  comments           Comment[]
+  bookmarks          Bookmark[]
+  favorites          Favorite[]
+  hashtags           ContentHashtag[]
+  translations       ContentTranslation[]
+  contentReports     ContentReport[]
+  generalReports     Report[]
+  seriesItems        SeriesItem[]
+  competitionEntries CompetitionEntry[]
+  contentUnlocks     ContentUnlock[]
+  narrationChapters  NarrationChapter[]
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([contentType])
+  @@index([language])
+  @@map("content")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  iconUrl     String?
+  parentId    String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  content  Content[]
+  series   Series[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  contentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@map("likes")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Gift {
+  id           String  @id @default(uuid())
+  name         String
+  description  String?
+  penValue     Int
+  /// Optional emoji shown in app (e.g. "🎁"). If set, often used instead of imageUrl.
+  iconEmoji    String?
+  imageUrl     String?
+  animationUrl String?
+  isActive     Boolean @default(true)
+  sortOrder    Int     @default(0)
+
+  userGifts UserGift[]
+
+  @@map("gifts")
+}
+
+model UserGift {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  giftId     String
+  message    String?
+  penValue   Int
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentGifts", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedGifts", fields: [receiverId], references: [id], onDelete: Cascade)
+  gift     Gift @relation(fields: [giftId], references: [id])
+
+  @@index([receiverId])
+  @@index([senderId])
+  @@map("user_gifts")
+}
+
+model Support {
+  id          String   @id @default(uuid())
+  supporterId String
+  receiverId  String
+  contentId   String?
+  coins       Int
+  message     String?
+  createdAt   DateTime @default(now())
+
+  supporter User     @relation("SentSupports", fields: [supporterId], references: [id], onDelete: Cascade)
+  receiver  User     @relation("ReceivedSupports", fields: [receiverId], references: [id], onDelete: Cascade)
+  content   Content? @relation(fields: [contentId], references: [id])
+
+  @@index([receiverId])
+  @@map("supports")
+}
+
+model CoinPackage {
+  id           String  @id @default(uuid())
+  coins        Int
+  price        Decimal @db.Decimal(10, 2)
+  bonusCoins   Int     @default(0)
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  @@map("coin_packages")
+}
+
+model PenPackage {
+  id           String  @id @default(uuid())
+  pens         Int
+  price        Decimal @db.Decimal(10, 2)
+  bonusPens    Int     @default(0)
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  @@map("pen_packages")
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  userId        String
+  type          TransactionType
+  amount        Int
+  currency      String            @default("INR")
+  referenceId   String?
+  referenceType String?
+  status        TransactionStatus @default(PENDING)
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("transactions")
+}
+
+model SubscriptionPlan {
+  id           String  @id @default(uuid())
+  name         String
+  description  String?
+  price        Decimal @db.Decimal(10, 2)
+  durationDays Int
+  features     Json?
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  subscriptions UserSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model UserSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  planId    String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  autoRenew Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@map("user_subscriptions")
+}
+
+model Conversation {
+  id        String           @id @default(uuid())
+  type      ConversationType @default(DIRECT)
+  createdAt DateTime         @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String    @id @default(uuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime  @default(now())
+  lastReadAt     DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String      @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String
+  messageType    MessageType @default(TEXT)
+  referenceId    String?
+  isRead         Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model OtpVerification {
+  id        String   @id @default(uuid())
+  phone     String
+  otp       String
+  type      String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+
+  @@index([phone])
+  @@map("otp_verifications")
+}
+
+model Admin {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole
+  permissions  Json?
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+
+  campaigns       Campaign[]
+  adConfigs       AdConfig[]
+  resolvedReports Report[]   @relation("AdminResolvedReports")
+
+  @@map("admins")
+}
+
+model Campaign {
+  id           String       @id @default(uuid())
+  name         String
+  description  String?
+  campaignType CampaignType
+  startDate    DateTime?
+  endDate      DateTime?
+  isActive     Boolean      @default(true)
+  metadata     Json?
+  createdById  String?
+  createdAt    DateTime     @default(now())
+
+  createdBy Admin? @relation(fields: [createdById], references: [id])
+
+  @@map("campaigns")
+}
+
+model AdConfig {
+  id           String      @id @default(uuid())
+  placement    AdPlacement
+  adType       AdType
+  isEnabled    Boolean     @default(true)
+  frequencyCap Int         @default(3)
+  updatedById  String?
+  updatedAt    DateTime    @default(now())
+
+  updatedBy Admin? @relation(fields: [updatedById], references: [id])
+
+  @@map("ad_configs")
+}
+
+model DeepLink {
+  id         String    @id @default(uuid())
+  code       String    @unique
+  entityType String
+  entityId   String
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime?
+
+  @@index([code])
+  @@index([entityId])
+  @@map("deep_links")
+}
+
+model Report {
+  id               String    @id @default(uuid())
+  contentId        String?
+  reporterId       String
+  reason           String
+  description      String?
+  status           String    @default("pending")
+  createdAt        DateTime  @default(now())
+  resolvedAt       DateTime?
+  /// Legacy: references `admins` table. Prefer `resolvedByUserId` for JWT User admins.
+  resolvedById     String?
+  resolvedByUserId String?
+
+  content        Content? @relation(fields: [contentId], references: [id])
+  reporter       User     @relation("UserReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy     Admin?   @relation("AdminResolvedReports", fields: [resolvedById], references: [id])
+  resolvedByUser User?    @relation("ReportResolvedByUser", fields: [resolvedByUserId], references: [id])
+
+  @@index([status])
+  @@index([resolvedByUserId])
+  @@map("reports")
+}
+
+/// CMS strings per page + language (admin-editable). Merged with code defaults on read.
+model SiteCopyBundle {
+  id        String   @id @default(uuid())
+  pageKey   String
+  language  String
+  strings   Json
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageKey, language])
+  @@index([language])
+  @@map("site_copy_bundles")
+}
+
+model ReadingSession {
+  id               String    @id @default(uuid())
+  userId           String
+  contentId        String
+  startTime        DateTime  @db.Timestamptz
+  endTime          DateTime? @db.Timestamptz
+  durationSeconds  Int       @default(0)
+  wordsRead        Int       @default(0)
+  scrollPercentage Int       @default(0)
+  isCompleted      Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contentId])
+  @@index([createdAt(sort: Desc)])
+  @@map("reading_sessions")
+}
+
+model ReadingStats {
+  id                      String    @id @default(uuid())
+  userId                  String    @unique
+  totalReadingTimeSeconds Int       @default(0)
+  totalWordsRead          Int       @default(0)
+  totalContentRead        Int       @default(0)
+  currentStreakDays       Int       @default(0)
+  longestStreakDays       Int       @default(0)
+  dailyGoalMinutes        Int       @default(15)
+  lastReadAt              DateTime?
+  updatedAt               DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reading_stats")
+}
+
+model DailyReadingLog {
+  id                 String   @id @default(uuid())
+  userId             String
+  date               DateTime @db.Date
+  readingTimeSeconds Int      @default(0)
+  wordsRead          Int      @default(0)
+  contentCount       Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("daily_reading_log")
+}
+
+model TrendingContent {
+  id             String   @id @default(uuid())
+  contentId      String
+  trendingScore  Decimal  @default(0) @db.Decimal(10, 4)
+  viewVelocity   Decimal  @default(0) @db.Decimal(10, 4)
+  engagementRate Decimal  @default(0) @db.Decimal(10, 4)
+  recencyFactor  Decimal  @default(1) @db.Decimal(10, 4)
+  timeWindow     String   @default("daily")
+  rankPosition   Int?
+  calculatedAt   DateTime @default(now())
+  expiresAt      DateTime @db.Timestamptz
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, timeWindow])
+  @@index([timeWindow, rankPosition])
+  @@index([expiresAt])
+  @@map("trending_content")
+}
+
+model ContentAnalysis {
+  id                String   @id @default(uuid())
+  contentId         String   @unique
+  autoTags          String[]
+  sentimentScore    Decimal? @db.Decimal(3, 2)
+  sentimentLabel    String?
+  qualityScore      Decimal? @db.Decimal(5, 2)
+  readingLevel      String?
+  keywords          String[]
+  similarContentIds String[]
+  aiTrendingScore   Decimal  @default(0) @db.Decimal(10, 4)
+  analyzedAt        DateTime @default(now())
+  analysisVersion   Int      @default(1)
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@map("content_analysis")
+}
+
+model ContentRecommendation {
+  id                 String    @id @default(uuid())
+  userId             String
+  contentId          String
+  recommendationType String
+  relevanceScore     Decimal   @default(0) @db.Decimal(5, 2)
+  sourceTags         String[]
+  isShown            Boolean   @default(false)
+  shownAt            DateTime?
+  isInteracted       Boolean   @default(false)
+  interactedAt       DateTime?
+  createdAt          DateTime  @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId, recommendationType])
+  @@index([userId])
+  @@index([recommendationType])
+  @@map("content_recommendations")
+}
+
+model UserInterest {
+  id                        String   @id @default(uuid())
+  userId                    String   @unique
+  interestTags              Json     @default("[]")
+  preferredContentTypes     Json     @default("[]")
+  preferredAuthors          String[] @default([])
+  readingTimePreference     String?
+  avgSessionDurationSeconds Int      @default(0)
+  updatedAt                 DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_interests")
+}
+
+model AiProcessingQueue {
+  id           String    @id @default(uuid())
+  entityType   String
+  entityId     String
+  action       String
+  payload      Json?
+  status       String    @default("pending")
+  retryCount   Int       @default(0)
+  errorMessage String?
+  webhookUrl   String?
+  result       Json?
+  createdAt    DateTime  @default(now())
+  processedAt  DateTime?
+
+  @@index([status, createdAt])
+  @@map("ai_processing_queue")
+}
+
+model NotificationTemplate {
+  id            String   @id @default(uuid())
+  type          String   @unique
+  titleTemplate String
+  bodyTemplate  String
+  variables     String[]
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@map("notification_templates")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model Language {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  name       String
+  nativeName String?
+  isActive   Boolean  @default(true)
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("languages")
+}
+
+model ContentTranslation {
+  id               String   @id @default(uuid())
+  contentId        String
+  languageCode     String
+  title            String?
+  body             String
+  isAutoTranslated Boolean  @default(false)
+  translatedBy     String?
+  createdAt        DateTime @default(now())
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, languageCode])
+  @@index([languageCode])
+  @@map("content_translations")
+}
+
+model Comment {
+  id           String    @id @default(uuid())
+  contentId    String
+  userId       String
+  parentId     String?
+  body         String
+  likesCount   Int       @default(0)
+  repliesCount Int       @default(0)
+  isPinned     Boolean   @default(false)
+  isEdited     Boolean   @default(false)
+  editedAt     DateTime?
+  createdAt    DateTime  @default(now())
+
+  content Content       @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("CommentReplies")
+  likes   CommentLike[]
+
+  @@index([contentId])
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@map("comment_likes")
+}
+
+model Hashtag {
+  id         String   @id @default(uuid())
+  tag        String   @unique
+  count      Int      @default(0)
+  isTrending Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  contents ContentHashtag[]
+
+  @@index([isTrending, count(sort: Desc)])
+  @@map("hashtags")
+}
+
+model ContentHashtag {
+  id        String   @id @default(uuid())
+  contentId String
+  hashtagId String
+  createdAt DateTime @default(now())
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  hashtag Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, hashtagId])
+  @@map("content_hashtags")
+}
+
+model Bookmark {
+  id             String   @id @default(uuid())
+  userId         String
+  contentId      String
+  collectionName String?
+  createdAt      DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@index([userId, collectionName])
+  @@map("bookmarks")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  contentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@map("favorites")
+}
+
+model Rating {
+  id          String   @id @default(uuid())
+  reviewerId  String
+  authorId    String
+  rating      Int
+  review      String?
+  isAnonymous Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  reviewer User @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  author   User @relation("ReceivedRatings", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewerId, authorId])
+  @@index([authorId])
+  @@map("ratings")
+}
+
+model WalletTransaction {
+  id            String   @id @default(uuid())
+  userId        String
+  type          String
+  amount        Decimal  @db.Decimal(12, 2)
+  balance       Decimal  @db.Decimal(12, 2)
+  description   String?
+  referenceId   String?
+  referenceType String?
+  status        String   @default("completed")
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("wallet_transactions")
+}
+
+model QuoteTemplate {
+  id              String   @id @default(uuid())
+  name            String
+  backgroundType  String   @default("gradient")
+  backgroundValue String
+  fontFamily      String   @default("sans-serif")
+  fontSize        Int      @default(24)
+  fontColor       String   @default("#ffffff")
+  textAlignment   String   @default("center")
+  isPremium       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  drafts QuoteDraft[]
+
+  @@index([displayOrder])
+  @@map("quote_templates")
+}
+
+model QuoteDraft {
+  id               String   @id @default(uuid())
+  userId           String
+  templateId       String?
+  content          String
+  customBackground String?
+  fontSettings     Json?
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template QuoteTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([userId])
+  @@index([isPublished])
+  @@map("quote_drafts")
+}
+
+model ContentReport {
+  id          String    @id @default(uuid())
+  contentId   String
+  reporterId  String
+  reason      String
+  description String?
+  status      String    @default("pending")
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  content  Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  reporter User    @relation("UserContentReports", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, reporterId])
+  @@index([status])
+  @@map("content_reports")
+}
+
+model VerificationRequest {
+  id           String    @id @default(uuid())
+  userId       String
+  documentType String
+  documentUrl  String
+  status       String    @default("pending")
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("verification_requests")
+}
+
+// ── Series (like Pratilipi collections) ─────────────────────────────
+
+enum SeriesStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+}
+
+model Series {
+  id            String            @id @default(uuid())
+  authorId      String
+  title         String
+  description   String?
+  coverImage    String?
+  language      String            @default("kn")
+  categoryId    String?
+  status        SeriesStatus      @default(ONGOING)
+  visibility    ContentVisibility @default(PUBLIC)
+  isPremium     Boolean           @default(false)
+  followerCount Int               @default(0)
+  contentCount  Int               @default(0)
+  viewCount     Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category  Category?      @relation(fields: [categoryId], references: [id])
+  items     SeriesItem[]
+  followers SeriesFollow[]
+
+  @@index([authorId])
+  @@index([language])
+  @@index([status])
+  @@map("series")
+}
+
+model SeriesItem {
+  id        String   @id @default(uuid())
+  seriesId  String
+  contentId String
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+
+  series  Series  @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, contentId])
+  @@index([seriesId, sortOrder])
+  @@map("series_items")
+}
+
+model SeriesFollow {
+  id        String   @id @default(uuid())
+  userId    String
+  seriesId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, seriesId])
+  @@index([seriesId])
+  @@map("series_follows")
+}
+
+// ── Competitions / Contests ─────────────────────────────────────────
+
+enum CompetitionStatus {
+  UPCOMING
+  ACTIVE
+  JUDGING
+  COMPLETED
+}
+
+model Competition {
+  id               String            @id @default(uuid())
+  title            String
+  description      String
+  bannerImage      String?
+  rules            String?
+  contentType      ContentType? // null = any type allowed
+  language         String? // null = any language
+  theme            String? // writing theme/prompt
+  prizePool        Decimal           @default(0) @db.Decimal(12, 2)
+  prizeFirst       Decimal           @default(0) @db.Decimal(12, 2)
+  prizeSecond      Decimal           @default(0) @db.Decimal(12, 2)
+  prizeThird       Decimal           @default(0) @db.Decimal(12, 2)
+  status           CompetitionStatus @default(UPCOMING)
+  startDate        DateTime
+  endDate          DateTime
+  resultsDate      DateTime?
+  maxEntries       Int? // per user, null = unlimited
+  minWordCount     Int?
+  maxWordCount     Int?
+  participantCount Int               @default(0)
+  isActive         Boolean           @default(true)
+  createdById      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  entries CompetitionEntry[]
+
+  @@index([status])
+  @@index([startDate])
+  @@map("competitions")
+}
+
+model CompetitionEntry {
+  id            String   @id @default(uuid())
+  competitionId String
+  userId        String
+  contentId     String
+  readCount     Int      @default(0)
+  likeCount     Int      @default(0)
+  score         Decimal  @default(0) @db.Decimal(10, 4)
+  rank          Int?
+  prizeWon      Decimal? @db.Decimal(12, 2)
+  submittedAt   DateTime @default(now())
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     Content     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, userId])
+  @@unique([competitionId, contentId])
+  @@index([competitionId, score(sort: Desc)])
+  @@map("competition_entries")
+}
+
+model Referral {
+  id             String   @id @default(uuid())
+  referrerId     String
+  referredId     String   @unique
+  referralCode   String
+  referrerReward Int      @default(0)
+  referredReward Int      @default(0)
+  isRewarded     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  referrer User @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User @relation("ReferredReferrals", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referralCode])
+  @@map("referrals")
+}
+
+// ── Creator Subscriptions (reader pays creator monthly) ─────────────────────
+
+model CreatorSubscription {
+  id           String   @id @default(uuid())
+  subscriberId String
+  creatorId    String
+  priceINR     Int
+  startDate    DateTime @default(now())
+  endDate      DateTime
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  subscriber User @relation("SubscriberSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
+  creator    User @relation("CreatorSubscribers", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriberId, creatorId])
+  @@index([creatorId])
+  @@index([subscriberId])
+  @@index([endDate])
+  @@map("creator_subscriptions")
+}
+
+// ── Ad revenue: 10% platform pool split readers / authors (audit) ─────────
+
+model AdRevenueDistributionRun {
+  id               String   @id @default(uuid())
+  month            String
+  grossAdRevenue   Decimal  @db.Decimal(14, 2)
+  platformPoolPct  Decimal  @db.Decimal(8, 6)
+  platformPool     Decimal  @db.Decimal(14, 2)
+  readerPool       Decimal  @db.Decimal(14, 2)
+  authorPool       Decimal  @db.Decimal(14, 2)
+  readerPoolRatio  Decimal  @db.Decimal(8, 6)
+  authorPoolRatio  Decimal  @db.Decimal(8, 6)
+  formulaVersion   Int
+  readerRecipients Int      @default(0)
+  authorRecipients Int      @default(0)
+  totalPaidReaders Decimal  @default(0) @db.Decimal(14, 2)
+  totalPaidAuthors Decimal  @default(0) @db.Decimal(14, 2)
+  metadata         Json?
+  executedAt       DateTime @default(now())
+  executedByUserId String?
+
+  @@unique([month])
+  @@index([executedAt])
+  @@map("ad_revenue_distribution_runs")
+}
+
+/// Key-value platform settings (admin-editable).
+model SiteConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_config")
+}
+
+model Banner {
+  id          String   @id @default(uuid())
+  title       String?
+  subtitle    String?
+  imageUrl    String?
+  deepLink    String?  // internal deeplink path like /content/123 or /competition/abc
+  link        String?  // external URL fallback
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("banners")
+}
+
+model ContentUnlock {
+  id         String   @id @default(uuid())
+  userId     String
+  contentId  String
+  coinsSpent Int
+  createdAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([contentId])
+  @@map("content_unlocks")
+}
+
+// ---- Kannada / multi-language narration pipeline (Gemini + Sarvam + ffmpeg) ----
+
+enum NarrationJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum NarrationJobStage {
+  IDLE
+  GEMINI_PREPROCESS
+  TTS_SEGMENTS
+  FFMPEG_COMPOSE
+  UPLOAD_FINALIZE
+  DONE
+}
+
+enum NarrationSegmentRole {
+  narration
+  dialogue
+}
+
+enum NarrationSegmentTtsStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum NarrationAudioAssetKind {
+  SEGMENT_RAW
+  SEGMENT_MASTER
+  CHAPTER_MASTER
+  CHAPTER_DELIVERY
+  WAVEFORM_META
+}
+
+model NarrationStory {
+  id                  String   @id @default(uuid())
+  ownerId             String
+  title               String
+  genre               String?
+  narratorGenderPref  String   @default("any") // male | female | any
+  dialectColloquial   Boolean  @default(true)
+  bgmDefaultEnabled   Boolean  @default(true)
+  sfxDefaultEnabled   Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  owner    User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  chapters NarrationChapter[]
+
+  @@index([ownerId])
+  @@map("narration_stories")
+}
+
+model NarrationChapter {
+  id             String   @id @default(uuid())
+  storyId        String
+  chapterNumber  Int      @default(1)
+  title          String?
+  rawText        String   @db.Text
+  contentId      String?  // optional link to published Content.body
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  story          NarrationStory   @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  content        Content?         @relation(fields: [contentId], references: [id], onDelete: SetNull)
+  jobs           NarrationJob[]
+
+  @@unique([storyId, chapterNumber])
+  @@index([contentId])
+  @@map("narration_chapters")
+}
+
+model NarrationJob {
+  id              String              @id @default(uuid())
+  chapterId       String
+  status          NarrationJobStatus  @default(QUEUED)
+  currentStage    NarrationJobStage   @default(IDLE)
+  retryCount      Int                 @default(0)
+  errorMessage    String?
+  errorStage      NarrationJobStage?
+  geminiJson      Json? // validated structured output
+  stageTimingsMs  Json                @default("{}") // { "GEMINI_PREPROCESS": 1234, ... }
+  masterAssetId   String?             @unique
+  deliveryAssetId String?             @unique
+  waveformMeta    Json?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  chapter       NarrationChapter      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  segments      NarrationSegment[]
+  logs          NarrationJobLog[]
+  audioAssets   NarrationAudioAsset[] @relation("JobAudioAssets")
+  masterAsset   NarrationAudioAsset?  @relation("JobMasterAsset", fields: [masterAssetId], references: [id], onDelete: SetNull)
+  deliveryAsset NarrationAudioAsset?  @relation("JobDeliveryAsset", fields: [deliveryAssetId], references: [id], onDelete: SetNull)
+
+  @@index([chapterId, status])
+  @@index([status, createdAt])
+  @@map("narration_jobs")
+}
+
+model NarrationSegment {
+  id                 String                   @id @default(uuid())
+  jobId              String
+  segmentIndex       Int
+  role               NarrationSegmentRole
+  speaker            String
+  emotion            String
+  pauseAfterMs       Int                      @default(0)
+  speed              Float                    @default(1.0)
+  bgmTag             String
+  sfxTag             String
+  originalText       String                   @db.Text
+  normalizedTtsText  String                   @db.Text
+  ttsStatus          NarrationSegmentTtsStatus @default(PENDING)
+  ttsRetryCount      Int                      @default(0)
+  ttsErrorMessage    String?
+  durationMs         Int?
+  idempotencyKey     String?                  @unique
+  audioAssetId       String?                  @unique
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  job        NarrationJob          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  audioAsset NarrationAudioAsset?  @relation(fields: [audioAssetId], references: [id], onDelete: SetNull)
+
+  @@unique([jobId, segmentIndex])
+  @@index([jobId, ttsStatus])
+  @@map("narration_segments")
+}
+
+model PronunciationLexicon {
+  id               String   @id @default(uuid())
+  rawToken         String
+  normalizedToken  String
+  spokenOverride   String?
+  dialect          String   @default("general")
+  notes            String?
+  priority         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([rawToken, dialect])
+  @@index([rawToken])
+  @@map("pronunciation_lexicon")
+}
+
+model NarrationAudioAsset {
+  id          String                   @id @default(uuid())
+  jobId       String?
+  kind        NarrationAudioAssetKind
+  storageKey  String
+  format      String // wav | mp3 | aac | json
+  bitrate     Int?
+  durationMs  Int?
+  checksum    String? // sha256 hex
+  provider    String // sarvam | ffmpeg | internal
+  createdAt   DateTime                 @default(now())
+
+  job              NarrationJob?       @relation("JobAudioAssets", fields: [jobId], references: [id], onDelete: Cascade)
+  segment          NarrationSegment?
+  masterForJob     NarrationJob?       @relation("JobMasterAsset")
+  deliveryForJob   NarrationJob?       @relation("JobDeliveryAsset")
+
+  @@index([jobId, kind])
+  @@index([storageKey])
+  @@map("narration_audio_assets")
+}
+
+model NarrationBgmAsset {
+  id            String   @id @default(uuid())
+  tag           String   @unique // e.g. calm_pad, tension_drone
+  storageKey    String
+  defaultGainDb Float    @default(-18)
+  loop          Boolean  @default(true)
+  durationMs    Int?
+  createdAt     DateTime @default(now())
+
+  @@map("narration_bgm_assets")
+}
+
+model NarrationSfxAsset {
+  id            String   @id @default(uuid())
+  tag           String   @unique
+  storageKey    String
+  defaultGainDb Float    @default(-12)
+  durationMs    Int?
+  createdAt     DateTime @default(now())
+
+  @@map("narration_sfx_assets")
+}
+
+model NarrationJobLog {
+  id        String   @id @default(uuid())
+  jobId     String
+  stage     String
+  level     String   @default("info") // info | warn | error
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  job NarrationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@map("narration_job_logs")
+}
+
+// ── Payment Orchestration ──
+
+model PaymentAttempt {
+  id                String               @id @default(uuid())
+  userId            String
+  paymentType       String               // wallet | coins | subscription | pens
+  amount            Decimal              @db.Decimal(10, 2)
+  currency          String               @default("INR")
+  gateway           String               // razorpay | easebuzz | phonepe | zoho
+  gatewayOrderId    String?
+  gatewayPaymentId  String?
+  internalReceipt   String               @unique
+  status            PaymentAttemptStatus  @default(INITIATED)
+  planId            String?
+  packageId         String?
+  initiatedAt       DateTime             @default(now())
+  completedAt       DateTime?
+  failoverFrom      String?
+  attemptNumber     Int                  @default(1)
+  errorCode         String?
+  errorMessage      String?
+  webhookReceivedAt DateTime?
+  webhookVerified   Boolean              @default(false)
+  metadata          Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([gateway, status])
+  @@index([gatewayOrderId])
+  @@index([internalReceipt])
+  @@map("payment_attempts")
+}
+
+model GatewayHealth {
+  id            String    @id @default(uuid())
+  gateway       String
+  windowStart   DateTime
+  windowMinutes Int       @default(60)
+  totalAttempts Int       @default(0)
+  successCount  Int       @default(0)
+  failureCount  Int       @default(0)
+  avgResponseMs Int       @default(0)
+  lastDownAt    DateTime?
+  lastUpAt      DateTime?
+  isDown        Boolean   @default(false)
+
+  @@unique([gateway, windowStart])
+  @@index([gateway])
+  @@map("gateway_health")
+}

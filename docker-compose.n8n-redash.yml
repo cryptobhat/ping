@@ -1,0 +1,114 @@
+# ==========================================
+# Kalaloka — n8n + Redash add-on
+# ==========================================
+# Usage: docker compose -f docker-compose.yml -f docker-compose.n8n-redash.yml up -d
+# First time Redash: docker compose -f docker-compose.yml -f docker-compose.n8n-redash.yml run --rm kavi-redash create_db
+
+services:
+  # ==========================================
+  # n8n Workflow Automation
+  # ==========================================
+  kavi-n8n:
+    image: n8nio/n8n:latest
+    container_name: kavi-n8n
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-kavi2026}
+      - N8N_HOST=n8n.digiyogi.com
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://n8n.digiyogi.com/
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=kavi-db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=${DB_USER:-kavi}
+      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD:-kavi_secret}
+      - GENERIC_TIMEZONE=Asia/Kolkata
+    volumes:
+      - kavi-n8n-data:/home/node/.n8n
+    depends_on:
+      kavi-db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-n8n.rule=Host(`n8n.digiyogi.com`)"
+      - "traefik.http.routers.kavi-n8n.entrypoints=https"
+      - "traefik.http.routers.kavi-n8n.tls=true"
+      - "traefik.http.routers.kavi-n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.kavi-n8n.loadbalancer.server.port=5678"
+
+  # ==========================================
+  # Redash Analytics
+  # ==========================================
+  kavi-redash:
+    image: redash/redash:10.1.0.b50633
+    container_name: kavi-redash
+    command: server
+    environment:
+      PYTHONUNBUFFERED: 0
+      REDASH_LOG_LEVEL: INFO
+      REDASH_REDIS_URL: redis://kavi-cache:6379/2
+      REDASH_DATABASE_URL: postgresql://${DB_USER:-kavi}:${DB_PASSWORD:-kavi_secret}@kavi-db:5432/redash
+      REDASH_COOKIE_SECRET: ${REDASH_COOKIE_SECRET:-change-me-kavi-2026}
+      REDASH_SECRET_KEY: ${REDASH_SECRET_KEY:-change-me-kavi-secret-2026}
+      REDASH_WEB_WORKERS: 2
+      REDASH_DATE_FORMAT: "DD/MM/YYYY"
+    depends_on:
+      kavi-db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-redash.rule=Host(`redash.digiyogi.com`)"
+      - "traefik.http.routers.kavi-redash.entrypoints=https"
+      - "traefik.http.routers.kavi-redash.tls=true"
+      - "traefik.http.routers.kavi-redash.tls.certresolver=letsencrypt"
+      - "traefik.http.services.kavi-redash.loadbalancer.server.port=5000"
+
+  kavi-redash-worker:
+    image: redash/redash:10.1.0.b50633
+    container_name: kavi-redash-worker
+    command: worker
+    environment:
+      PYTHONUNBUFFERED: 0
+      REDASH_REDIS_URL: redis://kavi-cache:6379/2
+      REDASH_DATABASE_URL: postgresql://${DB_USER:-kavi}:${DB_PASSWORD:-kavi_secret}@kavi-db:5432/redash
+      REDASH_COOKIE_SECRET: ${REDASH_COOKIE_SECRET:-change-me-kavi-2026}
+      REDASH_SECRET_KEY: ${REDASH_SECRET_KEY:-change-me-kavi-secret-2026}
+      QUEUES: "queries,scheduled_queries,celery"
+      WORKERS_COUNT: 2
+    depends_on:
+      - kavi-redash
+    restart: unless-stopped
+    networks:
+      - internal
+
+  kavi-redash-scheduler:
+    image: redash/redash:10.1.0.b50633
+    container_name: kavi-redash-scheduler
+    command: scheduler
+    environment:
+      PYTHONUNBUFFERED: 0
+      REDASH_REDIS_URL: redis://kavi-cache:6379/2
+      REDASH_DATABASE_URL: postgresql://${DB_USER:-kavi}:${DB_PASSWORD:-kavi_secret}@kavi-db:5432/redash
+      REDASH_COOKIE_SECRET: ${REDASH_COOKIE_SECRET:-change-me-kavi-2026}
+      REDASH_SECRET_KEY: ${REDASH_SECRET_KEY:-change-me-kavi-secret-2026}
+    depends_on:
+      - kavi-redash
+    restart: unless-stopped
+    networks:
+      - internal
+
+volumes:
+  kavi-n8n-data:

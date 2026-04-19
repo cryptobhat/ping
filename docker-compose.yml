@@ -1,0 +1,163 @@
+# ==============================================
+# Kalaloka Content Platform — Production Stack
+# ==============================================
+# Staging subdomains (digiyogi.com):
+#   API:   kavi-api.digiyogi.com
+#   Admin: kavi-admin.digiyogi.com
+#   Web:   kavi.digiyogi.com
+# Usage:
+#   docker compose up -d --build
+#   Optional n8n/redash overlay:
+#     docker compose -f docker-compose.yml -f docker-compose.n8n-redash.yml up -d
+
+services:
+  # ---- PostgreSQL ----
+  kavi-db:
+    image: postgres:15-alpine
+    container_name: kavi-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-kavi}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kavi_secret}
+      POSTGRES_DB: ${DB_NAME:-content_platform}
+    volumes:
+      - kavi-pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kavi} -d ${DB_NAME:-content_platform}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ---- Redis ----
+  kavi-cache:
+    image: redis:7-alpine
+    container_name: kavi-cache
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - kavi-redis-data:/data
+    restart: unless-stopped
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- Backend API (Express + Prisma) ----
+  kavi-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kavi-api
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER:-kavi}:${DB_PASSWORD:-kavi_secret}@kavi-db:5432/${DB_NAME:-content_platform}?schema=public
+      REDIS_URL: redis://kavi-cache:6379
+      TRUST_PROXY: "1"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      SARVAM_API_KEY: ${SARVAM_API_KEY:-}
+      BASE_URL: https://kavi-api.digiyogi.com
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    volumes:
+      - kavi-uploads:/app/uploads
+    depends_on:
+      kavi-db:
+        condition: service_healthy
+      kavi-cache:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-api.rule=Host(`kavi-api.digiyogi.com`)"
+      - "traefik.http.routers.kavi-api.entrypoints=https"
+      - "traefik.http.routers.kavi-api.tls=true"
+      - "traefik.http.routers.kavi-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.kavi-api.middlewares=kavi-compress@file,kavi-api-headers@file"
+      - "traefik.http.services.kavi-api.loadbalancer.server.port=3000"
+
+  # ---- Admin Panel (Next.js) ----
+  kavi-admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: kavi-admin
+    environment:
+      NODE_ENV: production
+      BACKEND_URL: http://kavi-api:3000
+      NEXT_PUBLIC_REDASH_URL: https://redash.digiyogi.com
+      NEXT_PUBLIC_WEB_APP_URL: https://kavi.digiyogi.com
+    depends_on:
+      - kavi-api
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-admin.rule=Host(`kavi-admin.digiyogi.com`)"
+      - "traefik.http.routers.kavi-admin.entrypoints=https"
+      - "traefik.http.routers.kavi-admin.tls=true"
+      - "traefik.http.routers.kavi-admin.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.kavi-admin-http.rule=Host(`kavi-admin.digiyogi.com`)"
+      - "traefik.http.routers.kavi-admin-http.entrypoints=http"
+      - "traefik.http.routers.kavi-admin-http.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.kavi-admin.middlewares=kavi-compress@file,kavi-web-headers@file"
+      - "traefik.http.services.kavi-admin.loadbalancer.server.port=3001"
+
+  # ---- Public Website (Next.js) ----
+  kavi-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=https://kavi-api.digiyogi.com
+        - NEXT_PUBLIC_SITE_URL=https://kavi.digiyogi.com
+        - NEXT_PUBLIC_APP_NAME=Kalaloka
+        - NEXT_PUBLIC_POSTHOG_KEY=${POSTHOG_API_KEY:-}
+        - NEXT_PUBLIC_POSTHOG_HOST=${POSTHOG_HOST:-https://us.i.posthog.com}
+        - NEXT_PUBLIC_SENTRY_DSN=${WEB_SENTRY_DSN:-}
+        - NEXT_PUBLIC_SENTRY_ENVIRONMENT=production
+        - NEXT_PUBLIC_ADSENSE_CLIENT=${ADSENSE_CLIENT:-}
+        - NEXT_PUBLIC_ADSENSE_SLOT=${ADSENSE_SLOT:-}
+        - NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=${GOOGLE_SITE_VERIFICATION:-}
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+    container_name: kavi-web
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - kavi-api
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-web.rule=Host(`kavi.digiyogi.com`)"
+      - "traefik.http.routers.kavi-web.entrypoints=https"
+      - "traefik.http.routers.kavi-web.tls=true"
+      - "traefik.http.routers.kavi-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.kavi-web.middlewares=kavi-compress@file,kavi-web-headers@file"
+      - "traefik.http.services.kavi-web.loadbalancer.server.port=3000"
+
+volumes:
+  kavi-pg-data:
+  kavi-redis-data:
+  kavi-uploads:
+
+networks:
+  internal:
+    driver: bridge
+  coolify:
+    external: true
