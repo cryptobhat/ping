@@ -1,0 +1,136 @@
+# Local development override - disables external network requirements
+
+# Remove all coolify network labels to prevent docker.io pull issues
+# Add "local" network for isolated development
+# Set health checks to localhost instead of external domains
+
+services:
+  kavi-db:
+    image: postgres:15-alpine
+    container_name: kavi-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-kavi}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kavi_secret}
+      POSTGRES_DB: ${DB_NAME:-content_platform}
+    volumes:
+      - kavi-pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - internal
+
+  kavi-cache:
+    image: redis:7-alpine
+    container_name: kavi-cache
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - kavi-redis-data:/data
+    restart: unless-stopped
+    networks:
+      - internal
+
+  kavi-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kavi-api
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER:-kavi}:${DB_PASSWORD:-kavi_secret}@kavi-db:5432/${DB_NAME:-content_platform}?schema=public
+      REDIS_URL: redis://kavi-cache:6379
+      TRUST_PROXY: "1"
+      BASE_URL: https://kavi-api.digiyogi.com
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      SARVAM_API_KEY: ${SARVAM_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    volumes:
+      - kavi-uploads:/app/uploads
+    depends_on:
+      - kavi-db:
+          condition: service_healthy
+      - kavi-cache:
+          condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kavi-api.rule=Host(`kavi-api.localhost`)
+      - "traefik.http.routers.kavi-api.entrypoints=localhost"
+      - "traefik.http.routers.kavi-api.tls=true"
+      - "traefik.http.services.kavi-api.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kavi} -d ${DB_NAME:-content_platform}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 15s
+
+  kavi-admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: kavi-admin
+    environment:
+      NODE_ENV: production
+      BACKEND_URL: http://kavi-api:3000
+      NEXT_PUBLIC_REDASH_URL: https://redash.digiyogi.com
+      NEXT_PUBLIC_WEB_APP_URL: https://kavi.digiyogi.com
+    depends_on:
+      - kavi-api
+          condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-admin.rule=Host(`kavi-admin.localhost`)
+      - "traefik.http.routers.kavi-admin.entrypoints=localhost"
+      - "traefik.http.routers.kavi-admin.tls=true"
+      - "traefik.http.routers.kavi-admin.middlewares=kavi-compress@file,kavi-admin-headers@file"
+
+  kavi-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    args:
+        - NEXT_PUBLIC_API_URL=https://kavi-api.digiyogi.com
+        - NEXT_PUBLIC_SITE_URL=https://kavi.digiyogi.com
+        - NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY:-}
+        - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST:-}
+        - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+        - NEXT_PUBLIC_SENTRY_ENVIRONMENT=${NEXT_PUBLIC_SENTRY_ENVIRONMENT:-}
+        - NEXT_PUBLIC_ADSENSE_CLIENT=${NEXT_PUBLIC_ADSENSE_CLIENT:-}
+        - NEXT_PUBLIC_ADSENSE_SLOT=${NEXT_PUBLIC_ADSENSE_SLOT:-}
+        - NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=${NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION:-}
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        - NEXT_PUBLIC_FACEBOOK_APP_ID=${NEXT_PUBLIC_FACEBOOK_APP_ID:-}
+        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-}
+    environment:
+      NODE_ENV= production
+    depends_on:
+      - kavi-api:
+          condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - coolify
+      labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.kavi-web.rule=Host(`kavi-web.localhost`)
+      - "traefik.http.routers.kavi-web.entrypoints=localhost"
+      - "traefik.http.routers.kavi-web.tls=true"
+      - "traefik.http.routers.kavi-web.middlewares=kavi-compress@file,kavi-web-headers@file"
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  kavi-pg-data:
+  kavi-redis-data:
+    kavi-uploads:
