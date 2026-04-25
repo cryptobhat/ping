@@ -4,8 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { Heading } from '@/components/ui/Heading';
+import { Field, Input, Textarea } from '@/components/ui/Input';
+import { Chip } from '@/components/ui/Chip';
 import { ArrowLeft, Camera, Save, User, BookOpen, Link2, MapPin, Globe, X, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth';
 import { userApi, uploadApi } from '@/lib/api';
@@ -156,14 +159,14 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+    <PageContainer size="md">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/settings" className="p-2 hover:bg-warm-100 dark:hover:bg-warm-800 rounded-lg transition-colors">
             <ArrowLeft className="w-5 h-5 text-warm-600 dark:text-warm-400" />
           </Link>
-          <h1 className="text-xl font-bold text-warm-900 dark:text-warm-50">Edit Profile</h1>
+          <Heading level={3} as="h1">Edit Profile</Heading>
         </div>
         <Button onClick={handleSave} loading={saving} size="md" icon={<Save className="w-4 h-4" />}>
           Save Changes
@@ -250,71 +253,66 @@ export default function EditProfilePage() {
         {/* Right: Form Fields */}
         <div className="flex-1 space-y-6">
           {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-warm-700 dark:text-warm-300 mb-1.5">
-              Display Name <span className="text-red-500">*</span>
-            </label>
-            <input
+          <Field label="Display Name" htmlFor="edit-profile-name" required>
+            <Input
+              id="edit-profile-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               aria-required="true"
-              aria-invalid={!name.trim() ? undefined : false}
-              className="w-full px-4 py-3 rounded-xl border border-warm-200 dark:border-warm-700 bg-white dark:bg-warm-900 text-warm-900 dark:text-warm-100 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+              autoComplete="name"
               placeholder="Enter your display name"
             />
-          </div>
+          </Field>
 
           {/* Username */}
-          <div>
-            <label className="block text-sm font-medium text-warm-700 dark:text-warm-300 mb-1.5">
-              Username <span className="text-red-500">*</span>
-            </label>
+          <Field
+            label="Username"
+            htmlFor="edit-profile-username"
+            required
+            error={usernameError || undefined}
+            helper={
+              !usernameError && username.length >= 3
+                ? `kalaloka.buzz/user/${username}`
+                : undefined
+            }
+          >
             {hasAutoUsername && (
               <div className="mb-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400">
                 You have an auto-generated username. Choose a unique username that represents you!
               </div>
             )}
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-warm-400">@</span>
-              <input
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-warm-400 z-10">@</span>
+              <Input
+                id="edit-profile-username"
                 type="text"
                 value={username}
                 onChange={(e) => handleUsernameChange(e.target.value)}
-                aria-invalid={!!usernameError}
-                aria-describedby={usernameError ? 'username-error' : undefined}
-                className={cn(
-                  'w-full pl-8 pr-4 py-3 rounded-xl border bg-white dark:bg-warm-900 text-warm-900 dark:text-warm-100 text-sm outline-none focus:ring-2 transition-all',
-                  usernameError
-                    ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/10'
-                    : 'border-warm-200 dark:border-warm-700 focus:border-primary focus:ring-primary/10'
-                )}
                 placeholder="choose_a_username"
                 maxLength={30}
+                autoComplete="username"
+                className="pl-8"
               />
             </div>
-            {usernameError && (
-              <p id="username-error" className="text-xs text-red-500 mt-1">{usernameError}</p>
-            )}
-            {!usernameError && username.length >= 3 && (
-              <p className="text-xs text-warm-400 mt-1">kalaloka.buzz/user/{username}</p>
-            )}
-          </div>
+          </Field>
 
           {/* Bio */}
-          <div>
-            <label className="block text-sm font-medium text-warm-700 dark:text-warm-300 mb-1.5">Bio</label>
-            <textarea
+          <Field
+            label="Bio"
+            htmlFor="edit-profile-bio"
+            helper={`${bio.length}/200`}
+          >
+            <Textarea
+              id="edit-profile-bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={4}
               maxLength={200}
-              className="w-full px-4 py-3 rounded-xl border border-warm-200 dark:border-warm-700 bg-white dark:bg-warm-900 text-warm-900 dark:text-warm-100 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none transition-all"
               placeholder="Tell others about yourself..."
             />
-            <p className="text-xs text-warm-400 text-right mt-1">{bio.length}/200</p>
-          </div>
+          </Field>
 
           {/* Location with autocomplete (OpenStreetMap Nominatim - free) */}
           <div>
@@ -380,18 +378,14 @@ export default function EditProfilePage() {
             <label className="block text-sm font-medium text-warm-700 dark:text-warm-300 mb-2">Writing Interests</label>
             <div className="flex flex-wrap gap-2">
               {allInterests.map((interest) => (
-                <button
+                <Chip
                   key={interest}
+                  size="md"
+                  active={interests.includes(interest)}
                   onClick={() => toggleInterest(interest)}
-                  className={cn(
-                    'px-3.5 py-2 rounded-xl text-sm font-medium transition-all border',
-                    interests.includes(interest)
-                      ? 'bg-primary/10 text-primary border-primary/20'
-                      : 'bg-white dark:bg-warm-900 text-warm-600 dark:text-warm-400 border-warm-200 dark:border-warm-800 hover:border-primary/30'
-                  )}
                 >
                   {interest}
-                </button>
+                </Chip>
               ))}
             </div>
           </div>
@@ -404,6 +398,6 @@ export default function EditProfilePage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

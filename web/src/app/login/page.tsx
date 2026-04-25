@@ -392,6 +392,10 @@ function LoginForm() {
 
           {step === 'phone' ? (
             <div className="space-y-4">
+              {/* TODO: migrate to <Field><Input /></Field>. The +91 country-code
+                  prefix is rendered inside the same border-box as the input, so
+                  this requires a custom prefix slot on Input (or wrap with a
+                  composed control) before swapping. */}
               <div>
                 <label className="block text-sm font-medium text-warm-700 dark:text-warm-300 mb-1.5">Phone Number</label>
                 <div className="flex items-center gap-2 border border-warm-200 dark:border-warm-700 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all bg-warm-50 dark:bg-warm-900">

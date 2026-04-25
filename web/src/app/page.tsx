@@ -186,6 +186,10 @@ export default function HomePage() {
   }
 
   return (
+    // TODO: migrate to <PageContainer> — current layout pads each section
+    // individually (`px-4 lg:px-6` per child). Migrating requires hoisting
+    // padding to a single container and dropping per-section classes; tracked
+    // separately to avoid a large diff.
     <div className="py-4 lg:py-6 space-y-8 lg:space-y-10 pb-28 lg:pb-6">
 
       {/* LIVE NOW — Circular Avatars */}

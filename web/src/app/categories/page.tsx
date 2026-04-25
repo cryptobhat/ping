@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { categoryApi } from '@/lib/api';
 import { BookOpen, Tag } from 'lucide-react';
 import { FallbackImage } from '@/components/ui/FallbackImage';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { Heading } from '@/components/ui/Heading';
 
 const GRADIENTS = [
   'from-rose-500 to-pink-600', 'from-violet-500 to-purple-600', 'from-blue-500 to-cyan-600',
@@ -26,23 +28,23 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="px-4 lg:px-6 py-6 pb-28 lg:pb-8">
+      <PageContainer className="pb-28 lg:pb-8">
         <div className="skeleton h-8 w-48 rounded-lg mb-6" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {[...Array(12)].map((_, i) => <div key={i} className="skeleton h-32 rounded-xl" />)}
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="px-4 lg:px-6 py-6 pb-28 lg:pb-8">
+    <PageContainer className="pb-28 lg:pb-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <Tag className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-warm-900 dark:text-warm-50">Categories</h1>
+          <Heading level={2} as="h1">Categories</Heading>
           <p className="text-sm text-warm-500">Browse stories by genre</p>
         </div>
       </div>
@@ -82,6 +84,6 @@ export default function CategoriesPage() {
           <p className="text-warm-500">No categories yet</p>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -6,7 +6,7 @@ import { cn, getInitials } from '@/lib/utils';
 interface AvatarProps {
   src?: string | null;
   name: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
   border?: boolean;
 }
@@ -17,6 +17,7 @@ const sizes = {
   md: 'w-11 h-11 text-sm',
   lg: 'w-14 h-14 text-base',
   xl: 'w-20 h-20 text-xl',
+  '2xl': 'w-32 h-32 text-3xl',
 };
 
 // Deterministic gradient based on name — each user gets a consistent color

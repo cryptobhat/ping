@@ -12,6 +12,10 @@ import { HScroll } from '@/components/ui/Carousel';
 import { Avatar } from '@/components/ui/Avatar';
 import { ContentCardSkeleton, BookCardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { Heading } from '@/components/ui/Heading';
+import { Tabs } from '@/components/ui/Tabs';
+import { Chip } from '@/components/ui/Chip';
 import {
   Search, Hash, Compass, TrendingUp, Filter, Flame, Star, Eye, Heart,
   BookOpen, Feather, FileText, ArrowRight, ChevronRight, Clock, ThumbsUp, Tag,
@@ -151,13 +155,13 @@ function DiscoverContent() {
       );
     }
     return (
-      <div className="py-4 lg:py-6 px-4 lg:px-8 space-y-8 pb-28 lg:pb-6">
+      <PageContainer className="space-y-8 pb-28 lg:pb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <Link href="/discover" className="text-sm text-primary font-medium hover:underline mb-2 inline-block">
               ← Back to Discover
             </Link>
-            <h1 className="text-2xl lg:text-3xl font-bold text-warm-900 dark:text-warm-50">Browse series</h1>
+            <Heading level={2} as="h1">Browse series</Heading>
             <p className="text-sm text-warm-500 mt-1">Episodic stories — free and paid chapters</p>
           </div>
           <Link
@@ -172,7 +176,7 @@ function DiscoverContent() {
             <BookCard key={s.id} item={s} type="series" />
           ))}
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -214,7 +218,7 @@ function DiscoverContent() {
         <div className="max-w-2xl mx-auto text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Compass className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl lg:text-3xl font-bold text-warm-900 dark:text-warm-50">Discover</h1>
+            <Heading level={2} as="h1">Discover</Heading>
           </div>
           <p className="text-sm text-warm-500">Explore stories, poems, and articles from amazing Kannada writers</p>
         </div>
@@ -384,7 +388,7 @@ function DiscoverContent() {
       {/* ═══ CONTENT TYPE FILTERS + CONTENT GRID ═══ */}
       <div className="px-4 lg:px-8">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg lg:text-xl font-bold text-warm-900 dark:text-warm-50">Browse Content</h2>
+          <Heading level={3} as="h2">Browse Content</Heading>
           <div className="flex items-center gap-1.5 text-xs text-warm-400">
             <Filter className="w-3.5 h-3.5" />
             <span>Filter</span>
@@ -392,56 +396,38 @@ function DiscoverContent() {
         </div>
 
         {/* Sort tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
-          {([
-            { value: 'latest', label: 'Latest', icon: Clock },
-            { value: 'popular', label: 'Popular', icon: TrendingUp },
-            { value: 'top_rated', label: 'Top Rated', icon: ThumbsUp },
-          ] as const).map(({ value, label, icon: SortIcon }) => (
-            <button
-              key={value}
-              onClick={() => setActiveSort(value)}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0',
-                activeSort === value
-                  ? 'bg-warm-900 dark:bg-warm-100 text-white dark:text-warm-900 shadow-sm'
-                  : 'bg-warm-50 dark:bg-warm-800/50 text-warm-500 dark:text-warm-400 hover:bg-warm-100 dark:hover:bg-warm-800'
-              )}
-            >
-              <SortIcon className="w-3.5 h-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          ariaLabel="Sort content"
+          activeId={activeSort}
+          onChange={(id) => setActiveSort(id as typeof activeSort)}
+          className="mb-4 -mx-4 px-4 lg:mx-0 lg:px-0"
+          tabs={[
+            { id: 'latest', label: 'Latest', icon: <Clock className="w-3.5 h-3.5" /> },
+            { id: 'popular', label: 'Popular', icon: <TrendingUp className="w-3.5 h-3.5" /> },
+            { id: 'top_rated', label: 'Top Rated', icon: <ThumbsUp className="w-3.5 h-3.5" /> },
+          ]}
+        />
 
         {/* Category filter pills */}
         {allCategories.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
-            <button
+          <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 mt-4">
+            <Chip
+              size="md"
+              active={!activeCategoryId}
               onClick={() => setActiveCategoryId('')}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0',
-                !activeCategoryId
-                  ? 'bg-primary/10 text-primary border border-primary/30'
-                  : 'bg-warm-50 dark:bg-warm-800/50 text-warm-500 dark:text-warm-400 hover:bg-warm-100 dark:hover:bg-warm-800 border border-transparent'
-              )}
+              icon={<Tag className="w-3 h-3" />}
             >
-              <Tag className="w-3 h-3" />
               All genres
-            </button>
+            </Chip>
             {allCategories.filter((c: any) => c.isActive !== false).map((cat: any) => (
-              <button
+              <Chip
                 key={cat.id}
+                size="md"
+                active={activeCategoryId === cat.id}
                 onClick={() => setActiveCategoryId(cat.id)}
-                className={cn(
-                  'px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0',
-                  activeCategoryId === cat.id
-                    ? 'bg-primary/10 text-primary border border-primary/30'
-                    : 'bg-warm-50 dark:bg-warm-800/50 text-warm-500 dark:text-warm-400 hover:bg-warm-100 dark:hover:bg-warm-800 border border-transparent'
-                )}
               >
                 {cat.name}
-              </button>
+              </Chip>
             ))}
           </div>
         )}
@@ -449,19 +435,15 @@ function DiscoverContent() {
         {/* Content type filter pills */}
         <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
           {contentTypes.map(({ value, label, icon: Icon }) => (
-            <button
+            <Chip
               key={value}
+              size="md"
+              variant={activeType === value ? 'primary' : 'secondary'}
               onClick={() => setActiveType(value)}
-              className={cn(
-                'flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0',
-                activeType === value
-                  ? 'bg-primary text-white shadow-md shadow-primary/20'
-                  : 'bg-white dark:bg-warm-900 text-warm-600 dark:text-warm-400 border border-warm-200 dark:border-warm-800 hover:border-primary/30 hover:bg-primary/5'
-              )}
+              icon={<Icon className="w-4 h-4" />}
             >
-              <Icon className="w-4 h-4" />
               {label}
-            </button>
+            </Chip>
           ))}
         </div>
 

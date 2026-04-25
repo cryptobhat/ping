@@ -14,6 +14,8 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { FallbackImage } from '@/components/ui/FallbackImage';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { Chip } from '@/components/ui/Chip';
 
 const RECENT_SEARCHES_KEY = 'kalaloka_recent_searches';
 const MAX_RECENT = 8;
@@ -133,7 +135,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+    <PageContainer size="md">
       {/* Search Input */}
       <div className="flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-warm-900 border-2 border-warm-200 dark:border-warm-700 rounded-2xl focus-within:border-primary transition-colors mb-8">
         <SearchIcon className="w-5 h-5 text-warm-400" />
@@ -240,13 +242,9 @@ export default function SearchPage() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {recentSearches.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setQuery(s)}
-                      className="px-3.5 py-2 bg-white dark:bg-warm-900 border border-warm-200 dark:border-warm-800 rounded-xl text-sm text-warm-700 dark:text-warm-300 hover:border-primary/30 hover:text-primary transition-all"
-                    >
+                    <Chip key={s} size="md" variant="secondary" onClick={() => setQuery(s)}>
                       {s}
-                    </button>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -331,6 +329,6 @@ export default function SearchPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

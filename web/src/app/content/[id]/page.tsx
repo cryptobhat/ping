@@ -22,6 +22,7 @@ import { FallbackImage } from '@/components/ui/FallbackImage';
 import { ShareButtons } from '@/components/share/ShareButtons';
 import { ReportContentModal } from '@/components/moderation/ReportContentModal';
 import { AdSenseSlot } from '@/components/ads/AdSenseSlot';
+import { READING_THEME } from '@/lib/reading-theme';
 
 /** Strip script tags, event handlers, and dangerous attributes from HTML */
 function sanitizeHtml(html: string): string {
@@ -48,10 +49,12 @@ function isHtmlContent(body: string): boolean {
   return /<[a-z][\s\S]*>/i.test(body);
 }
 
+// Reading theme palette — see `src/lib/reading-theme.ts` and the
+// `colors.reading` tokens in `tailwind.config.ts`.
 const themes = [
-  { id: 'light', label: 'Light', bg: 'bg-[#FAFAF8]', text: 'text-[#2C2C2C]', icon: Sun },
-  { id: 'sepia', label: 'Sepia', bg: 'bg-[#F4ECD8]', text: 'text-[#5B4636]', icon: BookOpen },
-  { id: 'dark', label: 'Dark', bg: 'bg-[#1A1A2E]', text: 'text-[#D4D4D8]', icon: Moon },
+  { id: 'light', label: 'Light', bg: READING_THEME.light.bgClass, text: READING_THEME.light.fgClass, icon: Sun },
+  { id: 'sepia', label: 'Sepia', bg: READING_THEME.sepia.bgClass, text: READING_THEME.sepia.fgClass, icon: BookOpen },
+  { id: 'dark', label: 'Dark', bg: READING_THEME.dark.bgClass, text: READING_THEME.dark.fgClass, icon: Moon },
 ];
 
 type CatalogGift = {
@@ -606,12 +609,15 @@ export default function ContentPage() {
                 </div>
                 {readingLocked && (
                   <div
-                    className={cn(
-                      'pointer-events-none absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t to-transparent',
-                      theme === 'dark' && 'from-[#1A1A2E] via-[#1A1A2E]/75',
-                      theme === 'sepia' && 'from-[#F4ECD8] via-[#F4ECD8]/75',
-                      theme === 'light' && 'from-[#FAFAF8] via-[#FAFAF8]/75'
-                    )}
+                    className="pointer-events-none absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t to-transparent"
+                    style={{
+                      // Use the same hex tokens as `tailwind.config.ts` colors.reading
+                      ['--tw-gradient-from' as any]: READING_THEME[theme as keyof typeof READING_THEME]?.bg,
+                      ['--tw-gradient-via' as any]: `${READING_THEME[theme as keyof typeof READING_THEME]?.bg}bf`,
+                      ['--tw-gradient-stops' as any]:
+                        `${READING_THEME[theme as keyof typeof READING_THEME]?.bg}, ${READING_THEME[theme as keyof typeof READING_THEME]?.bg}bf, transparent`,
+                      backgroundImage: `linear-gradient(to top, ${READING_THEME[theme as keyof typeof READING_THEME]?.bg}, ${READING_THEME[theme as keyof typeof READING_THEME]?.bg}bf 50%, transparent)`,
+                    }}
                     aria-hidden
                   />
                 )}

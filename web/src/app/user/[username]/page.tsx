@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ContentCardSkeleton } from '@/components/ui/Skeleton';
+import { Tabs } from '@/components/ui/Tabs';
 import {
   BookOpen,
   Feather,
@@ -305,22 +306,18 @@ export default function UserProfilePage() {
             </Button>
           </div>
         )}
-        <div className="flex gap-1 border-b border-warm-100 dark:border-warm-800 mb-4 overflow-x-auto scrollbar-hide">
-          {contentTabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
-                activeTab === id ? 'border-primary text-primary' : 'border-transparent text-warm-500 hover:text-warm-700'
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          variant="underline"
+          ariaLabel="Author content sections"
+          activeId={activeTab}
+          onChange={setActiveTab}
+          tabs={contentTabs.map(({ id, label, icon: Icon }) => ({
+            id,
+            label,
+            icon: <Icon className="w-4 h-4" />,
+          }))}
+          className="mb-4"
+        />
         {contentLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2, 3].map((i) => (

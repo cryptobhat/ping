@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ContentCardSkeleton } from '@/components/ui/Skeleton';
+import { Heading } from '@/components/ui/Heading';
+import { Tabs } from '@/components/ui/Tabs';
 import {
   Settings, Wallet, Star, Edit, BookOpen, Feather, FileText,
   Layers, FileEdit, MapPin, Calendar, Link2, CheckCircle, Users,
@@ -114,18 +116,16 @@ export default function ProfilePage() {
             <Avatar
               src={profile.profileImage}
               name={profile.name}
-              size="xl"
+              size="2xl"
               border
-              className="ring-4 ring-white dark:ring-warm-950 w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32"
+              className="ring-4 ring-white dark:ring-warm-950"
             />
 
             {/* Name and Actions */}
             <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-1">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-warm-900 dark:text-warm-50">
-                    {profile.name}
-                  </h1>
+                  <Heading level={2} as="h1">{profile.name}</Heading>
                   {profile.isVerified && <CheckCircle className="w-5 h-5 text-primary fill-primary/20" />}
                   {profile.isPremium && <Badge variant="warning" size="sm">Premium</Badge>}
                 </div>
@@ -235,23 +235,18 @@ export default function ProfilePage() {
         </div>
 
         {/* Content Tabs */}
-        <div className="flex gap-0.5 overflow-x-auto scrollbar-hide border-b border-warm-100 dark:border-warm-800 mb-6 -mx-4 px-4 lg:mx-0 lg:px-0">
-          {contentTabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={cn(
-                'flex items-center gap-1.5 px-4 sm:px-5 py-3 min-h-[44px] text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0',
-                activeTab === id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-warm-500 hover:text-warm-700 dark:hover:text-warm-300'
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          variant="underline"
+          ariaLabel="Profile content sections"
+          activeId={activeTab}
+          onChange={setActiveTab}
+          tabs={contentTabs.map(({ id, label, icon: Icon }) => ({
+            id,
+            label,
+            icon: <Icon className="w-4 h-4" />,
+          }))}
+          className="mb-6 -mx-4 px-4 lg:mx-0 lg:px-0"
+        />
 
         {/* Content Grid */}
         {loading ? (

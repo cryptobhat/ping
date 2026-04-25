@@ -44,6 +44,16 @@ const config: Config = {
           900: '#1C1917',
           950: '#0C0A09',
         },
+        // Reading themes (used by content/[id] reader). One source of truth —
+        // the in-page `themes` array references these tokens via `READING_THEME`.
+        reading: {
+          'light-bg': '#FAFAF8',
+          'light-fg': '#1F1B16',
+          'sepia-bg': '#F4ECD8',
+          'sepia-fg': '#5B4636',
+          'dark-bg': '#1A1A2E',
+          'dark-fg': '#E8E1D4',
+        },
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
