@@ -13,6 +13,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.kalaloka.buzz';
 const CHUNK_SIZE = 5000;
 
 export const revalidate = 3600;
+// Opt out of static prerender — chunk param is unbounded.
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
 export async function GET(
   _req: Request,
