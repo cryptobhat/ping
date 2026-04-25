@@ -60,6 +60,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     publishedTime: content.createdAt,
     modifiedTime: content.updatedAt,
     tags: content.hashtags?.map((h: any) => h.tag || h.hashtag?.tag || h),
+    locale: content.language,
   });
 }
 
@@ -79,11 +80,19 @@ export default async function ContentLayout({
         <>
           <JsonLd data={articleJsonLd(content, content.author)} />
           <JsonLd
-            data={breadcrumbJsonLd([
-              { name: 'Home', url: '/' },
-              { name: content.contentType || 'Content', url: `/discover?type=${content.contentType}` },
-              { name: content.title, url: `/content/${params.id}` },
-            ])}
+            data={breadcrumbJsonLd(
+              (() => {
+                const cat = content.category;
+                const middle = cat?.slug
+                  ? { name: cat.name || cat.slug, url: `/category/${cat.slug}` }
+                  : { name: content.contentType || 'Content', url: `/discover?type=${content.contentType}` };
+                return [
+                  { name: 'Home', url: '/' },
+                  middle,
+                  { name: content.title, url: `/content/${params.id}` },
+                ];
+              })()
+            )}
           />
         </>
       )}

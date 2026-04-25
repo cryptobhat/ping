@@ -16,6 +16,9 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/settings/', '/wallet/', '/chat/'],
       },
     ],
+    // Single canonical sitemap URL — the parent `/sitemap.xml` is a
+    // sitemap-index file that fans out to chunked child sitemaps under
+    // `/sitemaps/...` (see `src/app/sitemap.xml/route.ts`).
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }
