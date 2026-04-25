@@ -119,8 +119,13 @@ export function SubscriptionModal() {
               <Crown className="w-7 h-7" />
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-white/70 mb-1">Premium Membership</p>
+            {/* Live audit caught the prior ₹11/month here as stale: real
+                cheapest plan is ₹30 (Lite). Use "from ₹30/month" so the
+                modal cannot drift out of sync if pricing changes again,
+                and so it always matches at least one /subscription plan. */}
             <div className="flex items-baseline justify-center gap-1 mb-1">
-              <span className="text-5xl font-black">₹11</span>
+              <span className="text-xs font-medium text-white/70 self-center">from</span>
+              <span className="text-5xl font-black">₹30</span>
               <span className="text-lg text-white/70 font-medium">/month</span>
             </div>
             <p className="text-sm text-white/80">{t('subChaiHeadline', lang)}</p>
@@ -152,7 +157,7 @@ export function SubscriptionModal() {
             onClick={dismiss}
             className="block w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all text-[15px] active:scale-[0.98]"
           >
-            Subscribe — ₹11/month
+            Subscribe — from ₹30/month
           </Link>
           <button onClick={dismiss} className="w-full py-2 text-xs text-warm-400 hover:text-warm-600 transition-colors">
             No thanks, I&apos;ll read with ads

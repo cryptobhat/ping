@@ -47,7 +47,11 @@ export function buildMetadata(options: {
   /** Either a BCP-47-ish lang code ("kn", "hi-IN") or an OG locale ("kn_IN"). */
   locale?: string;
 }): Metadata {
-  const title = options.title ? `${options.title} | ${SITE_NAME}` : `${SITE_NAME} - Write. Read. Connect.`;
+  // Page-level title with brand suffix. We use { absolute } so the parent
+  // RootLayout's title.template ('%s | Kalaloka') does NOT get applied a
+  // second time and produce 'X | Kalaloka | Kalaloka' (the audit caught
+  // this on /content/[id] and /user/[username]).
+  const titleText = options.title ? `${options.title} | ${SITE_NAME}` : `${SITE_NAME} - Write. Read. Connect.`;
   const description = options.description || DEFAULT_DESCRIPTION;
   const image = options.image || DEFAULT_IMAGE;
   const url = options.url ? `${SITE_URL}${options.url}` : SITE_URL;
@@ -56,12 +60,12 @@ export function buildMetadata(options: {
     : 'en_IN';
 
   return {
-    title,
+    title: { absolute: titleText },
     description,
     metadataBase: new URL(SITE_URL),
     alternates: { canonical: url },
     openGraph: {
-      title,
+      title: titleText,
       description,
       url,
       siteName: SITE_NAME,
@@ -77,7 +81,7 @@ export function buildMetadata(options: {
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: titleText,
       description,
       images: [image],
       creator: options.author ? `@${options.author}` : undefined,

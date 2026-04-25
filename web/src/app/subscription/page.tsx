@@ -22,6 +22,26 @@ const features = [
   { icon: Star, label: 'Profile badge', desc: 'Stand out in the community' },
 ];
 
+/**
+ * Pick the user-facing billing cycle label for a plan. The API returns
+ * `durationDays` (30/90/365 today); we map that to month / 3 months / year.
+ * Honours an explicit `duration` or `interval` if a future API adds one.
+ * Replaces the prior `plan.name?.toLowerCase()` fallback that produced
+ * "/lite" "/reading owl" "/kala poshak" suffixes (caught in live audit).
+ */
+function planCycleLabel(plan: any): string {
+  if (!plan) return 'month';
+  if (typeof plan.duration === 'string' && plan.duration) return plan.duration;
+  if (typeof plan.interval === 'string' && plan.interval) return plan.interval;
+  const days = Number(plan.durationDays ?? plan.days ?? 0);
+  if (days >= 360 && days <= 380) return 'year';
+  if (days >= 80 && days <= 100) return '3 months';
+  if (days >= 25 && days <= 35) return 'month';
+  if (days >= 6 && days <= 8) return 'week';
+  if (days > 0) return `${days} days`;
+  return 'month';
+}
+
 const comparison = [
   { feature: 'Read free content', free: true, premium: true },
   { feature: 'Write and publish', free: true, premium: true },
@@ -193,7 +213,21 @@ export default function SubscriptionPage() {
                 const isPopular = plan.popular || plan.isPopular;
                 const price = plan.price ?? plan.amount ?? 0;
                 const originalPrice = plan.originalPrice ?? plan.mrp;
-                const duration = plan.duration || plan.interval || plan.name?.toLowerCase() || 'month';
+                // Cycle suffix: prefer explicit duration/interval; fall back to
+                // durationDays mapping. Live audit caught us using plan.name
+                // here ('Lite' / 'Reading Owl' / 'Kala Poshak'), which produced
+                // bogus '/lite' '/reading owl' '/kala poshak' suffixes.
+                const duration = (() => {
+                  if (typeof plan.duration === 'string' && plan.duration) return plan.duration;
+                  if (typeof plan.interval === 'string' && plan.interval) return plan.interval;
+                  const days = Number(plan.durationDays ?? plan.days ?? 0);
+                  if (days >= 360 && days <= 380) return 'year';
+                  if (days >= 80 && days <= 100) return '3 months';
+                  if (days >= 25 && days <= 35) return 'month';
+                  if (days >= 6 && days <= 8) return 'week';
+                  if (days > 0) return `${days} days`;
+                  return 'month';
+                })();
                 const savings = plan.savings || plan.discount;
                 return (
                   <button
@@ -256,7 +290,7 @@ export default function SubscriptionPage() {
           >
             {!isAuthenticated
               ? 'Sign in to Subscribe'
-              : `Subscribe Now${selectedPlanObj ? ` - ${'\u20B9'}${selectedPlanObj.price ?? selectedPlanObj.amount ?? 0}/${selectedPlanObj.duration || selectedPlanObj.interval || 'month'}` : ''}`}
+              : `Subscribe Now${selectedPlanObj ? ` - ${'\u20B9'}${selectedPlanObj.price ?? selectedPlanObj.amount ?? 0}/${planCycleLabel(selectedPlanObj)}` : ''}`}
           </Button>
           <p className="text-center text-xs text-warm-400">Cancel anytime. Secure payment via Razorpay.</p>
         </div>

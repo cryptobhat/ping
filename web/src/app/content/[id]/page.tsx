@@ -23,6 +23,7 @@ import { ShareButtons } from '@/components/share/ShareButtons';
 import { ReportContentModal } from '@/components/moderation/ReportContentModal';
 import { AdSenseSlot } from '@/components/ads/AdSenseSlot';
 import { READING_THEME } from '@/lib/reading-theme';
+import { decodeHtmlEntities } from '@/lib/html-utils';
 
 /** Strip script tags, event handlers, and dangerous attributes from HTML */
 function sanitizeHtml(html: string): string {
@@ -604,7 +605,9 @@ export default function ContentPage() {
                   {isHtmlContent(content.body) ? (
                     <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.body) }} />
                   ) : (
-                    content.body?.split('\n').map((p: string, i: number) => (p.trim() ? <p key={i}>{p}</p> : <br key={i} />))
+                    decodeHtmlEntities(content.body || '')
+                      .split('\n')
+                      .map((p: string, i: number) => (p.trim() ? <p key={i}>{p}</p> : <br key={i} />))
                   )}
                 </div>
                 {readingLocked && (
