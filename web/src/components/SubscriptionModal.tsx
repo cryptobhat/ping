@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { X, Crown, Check, Zap, Shield, BookOpen, Star, Gift } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { getReadingLang } from '@/lib/reading-lang';
@@ -9,10 +10,28 @@ import Link from 'next/link';
 
 const BOT_UA_RE = /Googlebot|bingbot|YandexBot|Baiduspider|DuckDuckBot|Slurp/i;
 
+// Routes where the upsell would obstruct the user's actual task
+// (writing, auth, settings, chat, the subscribe page itself, etc.).
+// On these paths the modal stays inert — its global click/keydown
+// listeners would otherwise pop the overlay over a form and block
+// publish/save/login interactions.
+const HIDE_ON_PATTERNS: RegExp[] = [
+  /^\/create/,
+  /^\/login/,
+  /^\/register/,
+  /^\/welcome/,
+  /^\/settings/,
+  /^\/chat/,
+  /^\/subscription/,
+  /^\/admin/,
+  /^\/onboarding/,
+];
+
 export function SubscriptionModal() {
   const [show, setShow] = useState(false);
   const [lang, setLang] = useState('en');
   const { user, isAuthenticated } = useAuthStore();
+  const pathname = usePathname();
 
   useEffect(() => {
     setLang(getReadingLang() || 'en');
@@ -21,6 +40,10 @@ export function SubscriptionModal() {
   useEffect(() => {
     // Skip modal entirely for premium users
     if (user?.isPremium) return;
+
+    // Skip on workflow/form pages — a global click listener here would
+    // race the user's primary action (Publish, Sign in, Save…).
+    if (pathname && HIDE_ON_PATTERNS.some((re) => re.test(pathname))) return;
 
     // Skip for SEO crawlers — they shouldn't see a popup blocking the LCP/CLS
     if (typeof navigator !== 'undefined' && BOT_UA_RE.test(navigator.userAgent || '')) {
@@ -69,7 +92,7 @@ export function SubscriptionModal() {
     }
 
     return cleanup;
-  }, [user?.isPremium]);
+  }, [user?.isPremium, pathname]);
 
   const dismiss = () => {
     setShow(false);
