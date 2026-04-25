@@ -21,6 +21,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn, formatNumber, formatDate, readingTime } from '@/lib/utils';
 import Link from 'next/link';
 import { getReadingLang } from '@/lib/reading-lang';
+import { t } from '@/lib/copy';
 import { fetchSiteCopy } from '@/lib/site-copy';
 import { stripHtml } from '@/lib/html-utils';
 import Image from 'next/image';
@@ -44,6 +45,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuthStore();
   const loadedRef = useRef(false);
+  // Reading language for client-side microcopy (footer links, section
+  // headings that aren't yet covered by the server-driven site-copy API).
+  const [lang, setLang] = useState('en');
+  useEffect(() => { setLang(getReadingLang() || 'en'); }, []);
 
   useEffect(() => {
     if (!loadedRef.current) {
@@ -471,7 +476,7 @@ export default function HomePage() {
       {/* ═══ RISING AUTHORS (new voices this month) ═══ */}
       {risingAuthors.length > 0 && (
       <div className="px-4 lg:px-6">
-        <SectionHeader title="Rising Authors" subtitle="New voices this month" href="/leaderboard" />
+        <SectionHeader title={t('homeRisingAuthors', lang)} subtitle={t('homeRisingAuthorsSub', lang)} href="/leaderboard" />
         <HScroll>
           {risingAuthors.map((entry: any) => (
             <Link key={entry.user.id} href={`/user/${entry.user.username}`} className="flex-shrink-0 w-36">
@@ -566,7 +571,7 @@ export default function HomePage() {
       {/* ═══ HASHTAGS ═══ */}
       {allHashtags.length > 0 && (
       <div className="px-4 lg:px-6">
-        <SectionHeader title="Trending Topics" />
+        <SectionHeader title={t('homeTrendingTopics', lang)} />
         <div className="flex gap-2 flex-wrap">
           {allHashtags.slice(0, 10).map((h: any) => (
             <Link key={h.id || h.tag} href={`/hashtag/${h.tag || h.name}`}>
@@ -728,19 +733,19 @@ export default function HomePage() {
       {/* ═══ FOOTER ═══ */}
       <div className="px-4 lg:px-6 pt-4 pb-2 border-t border-warm-100 dark:border-warm-800">
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-warm-400">
-          <Link href="/about" className="hover:text-primary transition-colors">About</Link>
-          <Link href="/help" className="hover:text-primary transition-colors">Help & FAQ</Link>
-          <Link href="/subscription" className="hover:text-primary transition-colors">Premium</Link>
-          <Link href="/competitions" className="hover:text-primary transition-colors">Competitions</Link>
-          <a href="mailto:support@kalaloka.buzz" className="hover:text-primary transition-colors">Contact</a>
+          <Link href="/about" className="hover:text-primary transition-colors">{t('footerAbout', lang)}</Link>
+          <Link href="/help" className="hover:text-primary transition-colors">{t('footerHelp', lang)}</Link>
+          <Link href="/subscription" className="hover:text-primary transition-colors">{t('footerPremium', lang)}</Link>
+          <Link href="/competitions" className="hover:text-primary transition-colors">{t('footerCompetitions', lang)}</Link>
+          <a href="mailto:support@kalaloka.buzz" className="hover:text-primary transition-colors">{t('footerContact', lang)}</a>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-warm-300 dark:text-warm-600 mt-2">
-          <Link href="/terms" className="hover:text-warm-500 transition-colors">Terms</Link>
-          <Link href="/privacy-policy" className="hover:text-warm-500 transition-colors">Privacy</Link>
-          <Link href="/community-guidelines" className="hover:text-warm-500 transition-colors">Guidelines</Link>
-          <Link href="/refund-policy" className="hover:text-warm-500 transition-colors">Refund</Link>
-          <Link href="/copyright" className="hover:text-warm-500 transition-colors">Copyright</Link>
-          <Link href="/grievance-redressal" className="hover:text-warm-500 transition-colors">Grievance</Link>
+          <Link href="/terms" className="hover:text-warm-500 transition-colors">{t('footerTerms', lang)}</Link>
+          <Link href="/privacy-policy" className="hover:text-warm-500 transition-colors">{t('footerPrivacy', lang)}</Link>
+          <Link href="/community-guidelines" className="hover:text-warm-500 transition-colors">{t('footerGuidelines', lang)}</Link>
+          <Link href="/refund-policy" className="hover:text-warm-500 transition-colors">{t('footerRefund', lang)}</Link>
+          <Link href="/copyright" className="hover:text-warm-500 transition-colors">{t('footerCopyright', lang)}</Link>
+          <Link href="/grievance-redressal" className="hover:text-warm-500 transition-colors">{t('footerGrievance', lang)}</Link>
         </div>
         <p className="text-[10px] text-warm-300 dark:text-warm-700 mt-2">&copy; {new Date().getFullYear()} Kalaloka by DigiYogi. Write. Read. Connect.</p>
       </div>

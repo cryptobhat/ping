@@ -73,13 +73,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang} suppressHydrationWarning className={inter.variable}>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        {/* Favicon + apple-touch-icon are auto-injected by Next.js metadata
+            files at app/icon.tsx and app/apple-icon.tsx. No need for static
+            favicon.ico / icon-192.png assets, which would 404 in console. */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0D8B7E" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Kalaloka" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <JsonLd data={websiteJsonLd()} />
       </head>
       <body className="font-sans antialiased overflow-x-hidden">

@@ -12,16 +12,17 @@ import { cn, formatNumber } from '@/lib/utils';
 import Link from 'next/link';
 import { getReadingLang } from '@/lib/reading-lang';
 import { useAuthStore } from '@/store/auth';
+import { t, type CopyKey } from '@/lib/copy';
 
 type Tab = 'today' | 'week' | 'month' | 'alltime' | 'earners' | 'rising';
 
-const tabs: { key: Tab; label: string; icon: typeof Trophy }[] = [
-  { key: 'today', label: "Today", icon: Flame },
-  { key: 'week', label: 'Week', icon: TrendingUp },
-  { key: 'month', label: 'Month', icon: Crown },
-  { key: 'alltime', label: 'All Time', icon: Trophy },
-  { key: 'earners', label: 'Earners', icon: IndianRupee },
-  { key: 'rising', label: 'Rising', icon: Sparkles },
+const tabs: { key: Tab; labelKey: CopyKey; icon: typeof Trophy }[] = [
+  { key: 'today', labelKey: 'lbToday', icon: Flame },
+  { key: 'week', labelKey: 'lbWeek', icon: TrendingUp },
+  { key: 'month', labelKey: 'lbMonth', icon: Crown },
+  { key: 'alltime', labelKey: 'lbAllTime', icon: Trophy },
+  { key: 'earners', labelKey: 'lbEarners', icon: IndianRupee },
+  { key: 'rising', labelKey: 'lbRising', icon: Sparkles },
 ];
 
 function RankBadge({ rank }: { rank: number }) {
@@ -59,12 +60,14 @@ function LeaderboardRow({
   isFollowing,
   onFollow,
   currentUserId,
+  lang,
 }: {
   entry: any;
   activeTab: Tab;
   isFollowing: boolean;
   onFollow: (userId: string) => void;
   currentUserId?: string;
+  lang: string;
 }) {
   const { rank, user, stats } = entry;
   const isTop3 = rank <= 3;
@@ -151,7 +154,7 @@ function LeaderboardRow({
                 : 'bg-primary text-white hover:bg-primary-dark shadow-sm shadow-primary/20'
             )}
           >
-            {isFollowing ? 'Following' : 'Follow'}
+            {isFollowing ? t('following', lang) : t('follow', lang)}
           </button>
         )}
       </div>
@@ -166,7 +169,10 @@ export default function LeaderboardPage() {
   const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
   const { user } = useAuthStore();
 
-  const lang = getReadingLang();
+  // Reading-language state. Reading lang lives in localStorage / cookie and is
+  // only available client-side, so we compute it on first effect tick.
+  const [lang, setLang] = useState('en');
+  useEffect(() => { setLang(getReadingLang() || 'en'); }, []);
 
   useEffect(() => {
     loadData();
@@ -241,15 +247,15 @@ export default function LeaderboardPage() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
             <Trophy className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-warm-900 dark:text-warm-50">Leaderboard</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-warm-900 dark:text-warm-50">{t('leaderboardTitle', lang)}</h1>
         </div>
-        <p className="text-sm text-warm-500">Discover the most popular writers and rising stars</p>
+        <p className="text-sm text-warm-500">{t('leaderboardSubtitle', lang)}</p>
       </div>
 
       {/* Tabs */}
       <div className="px-4 lg:px-0">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {tabs.map(({ key, label, icon: Icon }) => (
+          {tabs.map(({ key, labelKey, icon: Icon }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -261,7 +267,7 @@ export default function LeaderboardPage() {
               )}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              {t(labelKey, lang)}
             </button>
           ))}
         </div>
@@ -286,8 +292,8 @@ export default function LeaderboardPage() {
         ) : data.length === 0 ? (
           <div className="text-center py-16">
             <Trophy className="w-12 h-12 text-warm-300 dark:text-warm-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-warm-700 dark:text-warm-300 mb-1">No data yet</h3>
-            <p className="text-sm text-warm-500">The leaderboard will populate as writers publish content.</p>
+            <h3 className="font-semibold text-warm-700 dark:text-warm-300 mb-1">{t('lbNoData', lang)}</h3>
+            <p className="text-sm text-warm-500">{t('lbNoDataSub', lang)}</p>
           </div>
         ) : (
           data.map((entry: any) => (
@@ -298,6 +304,7 @@ export default function LeaderboardPage() {
               isFollowing={followingSet.has(entry.user.id)}
               onFollow={handleFollow}
               currentUserId={user?.id}
+              lang={lang}
             />
           ))
         )}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#0D8B7E"/>
+  <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle"
+        font-family="system-ui,Inter,Arial,sans-serif" font-weight="800"
+        font-size="22" letter-spacing="-1" fill="#FAFAF8">K</text>
+</svg>

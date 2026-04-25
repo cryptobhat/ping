@@ -10,6 +10,8 @@ import { useState, useEffect, useRef } from 'react';
 import { contentApi, bookmarkApi } from '@/lib/api';
 import { ReportContentModal } from '@/components/moderation/ReportContentModal';
 import { stripHtml } from '@/lib/html-utils';
+import { getReadingLang } from '@/lib/reading-lang';
+import { t } from '@/lib/copy';
 
 interface ContentCardProps {
   content: any;
@@ -26,6 +28,15 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
   const [coverImgError, setCoverImgError] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Reading language is client-only (localStorage / cookie). Default to en for
+  // the first paint, then upgrade to the user's pick once available so badge
+  // labels (Story / Poem / Article) match the rest of the UI.
+  const [lang, setLang] = useState('en');
+  useEffect(() => { setLang(getReadingLang() || 'en'); }, []);
+  const contentTypeLabel =
+    content.contentType === 'POEM' ? t('cardPoem', lang)
+    : content.contentType === 'ARTICLE' ? t('cardArticle', lang)
+    : t('cardStory', lang);
 
   // Close kebab menu on outside click / Escape.
   useEffect(() => {
@@ -115,7 +126,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
               <span className="flex items-center gap-1 text-xs"><Heart className={cn('w-3.5 h-3.5', liked && 'fill-primary text-primary')} />{formatNumber(likeCount)}</span>
               <span className="flex items-center gap-1 text-xs"><MessageCircle className="w-3.5 h-3.5" />{formatNumber(content.commentsCount || content._count?.comments || 0)}</span>
               <span className="flex items-center gap-1 text-xs"><Eye className="w-3.5 h-3.5" />{formatNumber(content.viewsCount || 0)}</span>
-              <Badge variant={content.contentType?.toLowerCase() as any} size="sm">{getContentTypeEmoji(content.contentType)} {content.contentType}</Badge>
+              <Badge variant={content.contentType?.toLowerCase() as any} size="sm">{getContentTypeEmoji(content.contentType)} {contentTypeLabel}</Badge>
               {content.membersOnly && (
                 <span className="flex items-center gap-0.5 text-[10px] text-violet-600 dark:text-violet-400 font-medium bg-violet-50 dark:bg-violet-950/30 px-1.5 py-0.5 rounded-full">
                   <Lock className="w-2.5 h-2.5" /> Members
@@ -173,7 +184,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
             <div className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <Badge variant={content.contentType?.toLowerCase() as any} size="sm">
-                  {getContentTypeEmoji(content.contentType)} {content.contentType}
+                  {getContentTypeEmoji(content.contentType)} {contentTypeLabel}
                 </Badge>
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setReportOpen(true); }}
@@ -225,7 +236,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <Badge variant={content.contentType?.toLowerCase() as any} size="sm">
-            {getContentTypeEmoji(content.contentType)} {content.contentType}
+            {getContentTypeEmoji(content.contentType)} {contentTypeLabel}
           </Badge>
           {content.membersOnly && (
             <Badge variant="primary" size="sm" className="bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400 hidden sm:flex">

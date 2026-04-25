@@ -24,6 +24,8 @@ import { ReportContentModal } from '@/components/moderation/ReportContentModal';
 import { AdSenseSlot } from '@/components/ads/AdSenseSlot';
 import { READING_THEME } from '@/lib/reading-theme';
 import { decodeHtmlEntities } from '@/lib/html-utils';
+import { getReadingLang } from '@/lib/reading-lang';
+import { t } from '@/lib/copy';
 
 /** Strip script tags, event handlers, and dangerous attributes from HTML */
 function sanitizeHtml(html: string): string {
@@ -113,6 +115,10 @@ export default function ContentPage() {
   const [followingAuthor, setFollowingAuthor] = useState(false);
   // Razorpay unlock
   const [unlockingPay, setUnlockingPay] = useState(false);
+  // Reading language (client-only). Used to localise sidebar headings, gates,
+  // and CTAs that aren't covered by the server-driven site-copy API.
+  const [lang, setLang] = useState('en');
+  useEffect(() => { setLang(getReadingLang() || 'en'); }, []);
   const contentRef = useRef<HTMLDivElement>(null);
   const readProgressRef = useRef(0);
   const sessionEndedRef = useRef(false);
@@ -589,7 +595,7 @@ export default function ContentPage() {
                     className="flex-shrink-0"
                     icon={followingAuthor ? <UserMinus className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
                   >
-                    {followingAuthor ? 'Following' : 'Follow'}
+                    {followingAuthor ? t('following', lang) : t('follow', lang)}
                   </Button>
                 )}
               </div>
@@ -632,15 +638,15 @@ export default function ContentPage() {
                     <Lock className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-warm-900 dark:text-warm-50 text-lg">Sign in to read the full story</h3>
-                    <p className="text-sm text-warm-500 mt-1">Use your phone number — quick OTP, same as the Kalaloka app.</p>
+                    <h3 className="font-bold text-warm-900 dark:text-warm-50 text-lg">{t('signInToReadFull', lang)}</h3>
+                    <p className="text-sm text-warm-500 mt-1">{t('signInToReadOrCreate', lang)}</p>
                   </div>
                   <Link
                     href={`/login?next=/content/${id}`}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl gradient-primary text-white text-sm font-semibold shadow-lg shadow-primary/25"
                   >
                     <Phone className="w-4 h-4" />
-                    Sign in or create account
+                    {t('signInOrCreate', lang)}
                   </Link>
                 </div>
               )}
@@ -791,10 +797,10 @@ export default function ContentPage() {
               <AdSenseSlot className="mb-6" />
               {!isAuthor && (
                 <div className="rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10 p-6 text-center">
-                  <p className="text-sm text-warm-600 dark:text-warm-400 mb-3">Enjoyed this? Show your appreciation!</p>
+                  <p className="text-sm text-warm-600 dark:text-warm-400 mb-3">{t('appreciation', lang)}</p>
                   <div className="flex justify-center gap-3">
-                    <Button variant="outline" size="sm" icon={<Gem className="w-4 h-4" />} onClick={openGiftModal}>Send a Gem</Button>
-                    <Link href={`/rate?authorId=${author.id}`}><Button variant="outline" size="sm" icon={<Star className="w-4 h-4" />}>Rate Author</Button></Link>
+                    <Button variant="outline" size="sm" icon={<Gem className="w-4 h-4" />} onClick={openGiftModal}>{t('sendGem', lang)}</Button>
+                    <Link href={`/rate?authorId=${author.id}`}><Button variant="outline" size="sm" icon={<Star className="w-4 h-4" />}>{t('rateAuthor', lang)}</Button></Link>
                   </div>
                 </div>
               )}
@@ -805,7 +811,7 @@ export default function ContentPage() {
               <div className="sticky top-16 space-y-6">
                 {/* About Author card */}
                 <div className="bg-white dark:bg-warm-900 rounded-2xl p-5 border border-warm-100 dark:border-warm-800">
-                  <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">About the Author</h3>
+                  <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">{t('authorHeading', lang)}</h3>
                   <div className="flex items-center gap-3 mb-4">
                     <Link href={`/user/${author.username}`}>
                       <Avatar src={author.profileImage} name={author.name || 'User'} size="lg" border />
@@ -819,28 +825,28 @@ export default function ContentPage() {
                   <div className="flex items-center gap-4 mb-4 text-center">
                     <div className="flex-1">
                       <p className="text-lg font-bold text-warm-900 dark:text-warm-50">{formatNumber(author.followersCount || 0)}</p>
-                      <p className="text-[10px] text-warm-500">Followers</p>
+                      <p className="text-[10px] text-warm-500">{t('followers', lang)}</p>
                     </div>
                     <div className="w-px h-8 bg-warm-100 dark:bg-warm-800" />
                     <div className="flex-1">
                       <p className="text-lg font-bold text-warm-900 dark:text-warm-50">{formatNumber(author.contentCount || 0)}</p>
-                      <p className="text-[10px] text-warm-500">Stories</p>
+                      <p className="text-[10px] text-warm-500">{t('storiesCount', lang)}</p>
                     </div>
                   </div>
                   <Link href={`/user/${author.username}`} className="block">
-                    <Button variant="primary" size="sm" className="w-full">View Profile</Button>
+                    <Button variant="primary" size="sm" className="w-full">{t('viewProfile', lang)}</Button>
                   </Link>
                 </div>
 
                 {/* Content stats mini card */}
                 <div className="bg-white dark:bg-warm-900 rounded-2xl p-5 border border-warm-100 dark:border-warm-800">
-                  <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-3">Stats</h3>
+                  <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-3">{t('statsHeading', lang)}</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { icon: Eye, label: 'Views', value: content.viewsCount || content.viewCount || 0 },
-                      { icon: Heart, label: 'Likes', value: likeCount },
-                      { icon: MessageCircle, label: 'Comments', value: commentCount || content.commentsCount || content._count?.comments || 0 },
-                      { icon: Clock, label: 'Read Time', value: readingTime(wordCount) },
+                      { icon: Eye, label: t('views', lang), value: content.viewsCount || content.viewCount || 0 },
+                      { icon: Heart, label: t('likes', lang), value: likeCount },
+                      { icon: MessageCircle, label: t('comments', lang), value: commentCount || content.commentsCount || content._count?.comments || 0 },
+                      { icon: Clock, label: t('readTime', lang), value: readingTime(wordCount) },
                       ...(authorRating && authorRating.count > 0 ? [{ icon: Star, label: `Rating (${authorRating.count})`, value: authorRating.avg.toFixed(1) }] : []),
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center gap-2.5 py-1.5">
@@ -873,7 +879,7 @@ export default function ContentPage() {
                 {/* Related Stories */}
                 {related.length > 0 && (
                   <div className="bg-white dark:bg-warm-900 rounded-2xl p-5 border border-warm-100 dark:border-warm-800">
-                    <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">Related Stories</h3>
+                    <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">{t('relatedStories', lang)}</h3>
                     <div className="space-y-3">
                       {related.map((story) => (
                         <Link key={story.id} href={`/content/${story.id}`} className="flex items-center gap-3 group">
@@ -926,13 +932,13 @@ export default function ContentPage() {
                   </div>
                 ) : (
                   <Link href={`/login?next=/content/${id}`} className="block text-center py-4 bg-warm-50 dark:bg-warm-900 rounded-2xl border border-warm-200 dark:border-warm-800 text-sm text-primary font-medium hover:bg-primary/5 transition-colors">
-                    Sign in to comment
+                    {t('signInToComment', lang)}
                   </Link>
                 )}
               </div>
               <div className="space-y-4">
                 {comments.length === 0 ? (
-                  <div className="text-center py-8"><p className="text-sm text-warm-400">No comments yet. Be the first!</p></div>
+                  <div className="text-center py-8"><p className="text-sm text-warm-400">{t('noCommentsBeFirst', lang)}</p></div>
                 ) : (() => {
                   const topLevel = comments.filter((c: any) => !c.parentId);
                   const repliesMap: Record<string, any[]> = {};
@@ -989,11 +995,11 @@ export default function ContentPage() {
           <div className="max-w-2xl mx-auto px-4 lg:px-0 lg:mx-0 lg:flex-1 lg:max-w-3xl py-6 pb-28 lg:pb-6 space-y-6">
             <div className="grid grid-cols-3 gap-3">
               {[
-                { icon: Eye, label: 'Views', value: content.viewsCount || content.viewCount || 0 },
-                { icon: Heart, label: 'Likes', value: likeCount },
-                { icon: MessageCircle, label: 'Comments', value: commentCount || content.commentsCount || content._count?.comments || 0 },
+                { icon: Eye, label: t('views', lang), value: content.viewsCount || content.viewCount || 0 },
+                { icon: Heart, label: t('likes', lang), value: likeCount },
+                { icon: MessageCircle, label: t('comments', lang), value: commentCount || content.commentsCount || content._count?.comments || 0 },
                 { icon: Bookmark, label: 'Saves', value: content.bookmarksCount || 0 },
-                { icon: Clock, label: 'Read Time', value: readingTime(wordCount) },
+                { icon: Clock, label: t('readTime', lang), value: readingTime(wordCount) },
                 { icon: Type, label: 'Words', value: wordCount },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="bg-white dark:bg-warm-900 rounded-xl p-4 border border-warm-100 dark:border-warm-800 text-center">
@@ -1007,7 +1013,7 @@ export default function ContentPage() {
             </div>
             {/* Author card - visible on mobile for details tab (desktop has sidebar) */}
             <div className="lg:hidden bg-white dark:bg-warm-900 rounded-2xl p-5 border border-warm-100 dark:border-warm-800">
-              <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-3">About the Author</h3>
+              <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-3">{t('authorHeading', lang)}</h3>
               <div className="flex items-center gap-3">
                 <Avatar src={author.profileImage} name={author.name} size="lg" border />
                 <div className="flex-1">
@@ -1015,7 +1021,7 @@ export default function ContentPage() {
                   <p className="text-xs text-warm-500">@{author.username}</p>
                   {author.bio && <p className="text-xs text-warm-500 mt-1 line-clamp-2">{author.bio}</p>}
                 </div>
-                <Link href={`/user/${author.username}`}><Button variant="primary" size="sm">View Profile</Button></Link>
+                <Link href={`/user/${author.username}`}><Button variant="primary" size="sm">{t('viewProfile', lang)}</Button></Link>
               </div>
             </div>
             {content.hashtags?.length > 0 && (
@@ -1032,7 +1038,7 @@ export default function ContentPage() {
           <aside className="hidden lg:block w-80 xl:w-96 flex-shrink-0 py-6">
             <div className="sticky top-16 space-y-6">
               <div className="bg-white dark:bg-warm-900 rounded-2xl p-5 border border-warm-100 dark:border-warm-800">
-                <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">About the Author</h3>
+                <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">{t('authorHeading', lang)}</h3>
                 <div className="flex items-center gap-3 mb-4">
                   <Link href={`/user/${author.username}`}><Avatar src={author.profileImage} name={author.name || 'User'} size="lg" border /></Link>
                   <div className="flex-1 min-w-0">
@@ -1044,19 +1050,19 @@ export default function ContentPage() {
                 <div className="flex items-center gap-4 mb-4 text-center">
                   <div className="flex-1">
                     <p className="text-lg font-bold text-warm-900 dark:text-warm-50">{formatNumber(author.followersCount || 0)}</p>
-                    <p className="text-[10px] text-warm-500">Followers</p>
+                    <p className="text-[10px] text-warm-500">{t('followers', lang)}</p>
                   </div>
                   <div className="w-px h-8 bg-warm-100 dark:bg-warm-800" />
                   <div className="flex-1">
                     <p className="text-lg font-bold text-warm-900 dark:text-warm-50">{formatNumber(author.contentCount || 0)}</p>
-                    <p className="text-[10px] text-warm-500">Stories</p>
+                    <p className="text-[10px] text-warm-500">{t('storiesCount', lang)}</p>
                   </div>
                 </div>
-                <Link href={`/user/${author.username}`} className="block"><Button variant="primary" size="sm" className="w-full">View Profile</Button></Link>
+                <Link href={`/user/${author.username}`} className="block"><Button variant="primary" size="sm" className="w-full">{t('viewProfile', lang)}</Button></Link>
               </div>
               {related.length > 0 && (
                 <div className="bg-white dark:bg-warm-900 rounded-2xl p-5 border border-warm-100 dark:border-warm-800">
-                  <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">Related Stories</h3>
+                  <h3 className="text-sm font-semibold text-warm-900 dark:text-warm-100 mb-4">{t('relatedStories', lang)}</h3>
                   <div className="space-y-3">
                     {related.map((story) => (
                       <Link key={story.id} href={`/content/${story.id}`} className="flex items-center gap-3 group">
