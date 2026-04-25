@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, MessageCircle, Bookmark, Share2, Eye, Star, Lock, BookOpen, Flag } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, Eye, Star, Lock, BookOpen, Feather, FileText, Flag } from 'lucide-react';
 import { cn, formatDate, formatNumber, readingTime, getContentTypeEmoji } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { useState } from 'react';
 import { contentApi, bookmarkApi } from '@/lib/api';
 import { ReportContentModal } from '@/components/moderation/ReportContentModal';
+import { stripHtml } from '@/lib/html-utils';
 
 interface ContentCardProps {
   content: any;
@@ -20,6 +21,10 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
   const [likeCount, setLikeCount] = useState(content.likesCount || content._count?.likes || 0);
   const [bookmarked, setBookmarked] = useState(content.isBookmarked || false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [coverImgError, setCoverImgError] = useState(false);
+
+  const ContentTypeIcon = content.contentType === 'POEM' ? Feather : content.contentType === 'ARTICLE' ? FileText : BookOpen;
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,7 +83,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
               )}
             </div>
             <h3 className="font-semibold text-warm-900 dark:text-warm-100 mb-1 group-hover:text-primary transition-colors line-clamp-2">{content.title}</h3>
-            <p className="text-sm text-warm-500 line-clamp-2">{content.excerpt || content.body?.slice(0, 120)}</p>
+            <p className="text-sm text-warm-500 line-clamp-2">{content.excerpt || (content.body ? stripHtml(content.body).slice(0, 120) : '')}</p>
             <div className="flex items-center gap-3 mt-2.5 text-warm-400">
               <span className="flex items-center gap-1 text-xs"><Heart className={cn('w-3.5 h-3.5', liked && 'fill-primary text-primary')} />{formatNumber(likeCount)}</span>
               <span className="flex items-center gap-1 text-xs"><MessageCircle className="w-3.5 h-3.5" />{formatNumber(content.commentsCount || content._count?.comments || 0)}</span>
@@ -92,17 +97,17 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
             </div>
           </div>
           <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative bg-warm-100 dark:bg-warm-800">
-            {content.coverImage ? (
+            {content.coverImage && !imgError ? (
               <img
                 src={content.coverImage}
                 alt=""
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                onError={() => setImgError(true)}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-warm-300" />
+                <ContentTypeIcon className="w-6 h-6 text-warm-300 dark:text-warm-500" />
               </div>
             )}
             {content.membersOnly && (
@@ -122,17 +127,17 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
         <Link href={`/content/${content.id}`} className="group block">
           <div className="bg-white dark:bg-warm-900 rounded-2xl overflow-hidden border border-warm-100 dark:border-warm-800 hover-lift relative">
             <div className="aspect-[2/1] overflow-hidden bg-warm-100 dark:bg-warm-800">
-              {content.coverImage ? (
+              {content.coverImage && !imgError ? (
                 <img
                   src={content.coverImage}
                   alt=""
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  onError={() => setImgError(true)}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-warm-300" />
+                  <ContentTypeIcon className="w-8 h-8 text-warm-300 dark:text-warm-500" />
                 </div>
               )}
             </div>
@@ -150,7 +155,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
                 </button>
               </div>
               <h3 className="font-semibold text-warm-900 dark:text-warm-100 mb-1 line-clamp-2 group-hover:text-primary transition-colors">{content.title}</h3>
-              <p className="text-xs text-warm-500 line-clamp-2 mb-3">{content.excerpt || content.body?.slice(0, 100)}</p>
+              <p className="text-xs text-warm-500 line-clamp-2 mb-3">{content.excerpt || (content.body ? stripHtml(content.body).slice(0, 100) : '')}</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Avatar src={author.profileImage} name={author.name || 'User'} size="xs" />
@@ -210,17 +215,23 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
       <Link href={`/content/${content.id}`} className="block group">
         <div className="px-5 py-2">
           <h3 className="text-lg font-bold text-warm-900 dark:text-warm-50 group-hover:text-primary transition-colors mb-1">{content.title}</h3>
-          <p className="text-sm text-warm-600 dark:text-warm-400 line-clamp-3 leading-relaxed">{content.excerpt || content.body?.slice(0, 200)}</p>
+          <p className="text-sm text-warm-600 dark:text-warm-400 line-clamp-3 leading-relaxed">{content.excerpt || (content.body ? stripHtml(content.body).slice(0, 200) : '')}</p>
         </div>
         {content.coverImage && (
           <div className="mx-5 mt-2 rounded-xl overflow-hidden aspect-[2/1] bg-warm-100 dark:bg-warm-800">
-            <img
-              src={content.coverImage}
-              alt=""
-              loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
+            {!coverImgError ? (
+              <img
+                src={content.coverImage}
+                alt=""
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                onError={() => setCoverImgError(true)}
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                <ContentTypeIcon className="w-10 h-10 text-warm-300 dark:text-warm-500" />
+              </div>
+            )}
           </div>
         )}
       </Link>

@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { buildMetadata, articleJsonLd, breadcrumbJsonLd } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { stripHtml } from '@/lib/html-utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.kalaloka.buzz';
 
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const author = content.author || {};
   const wordCount = content.body?.split(/\s+/).length || 0;
   const readTime = Math.max(1, Math.ceil(wordCount / 200));
-  const excerpt = content.excerpt || content.body?.slice(0, 160).replace(/\n/g, ' ');
+  const excerpt = content.excerpt || (content.body ? stripHtml(content.body).slice(0, 160).replace(/\n/g, ' ') : '');
 
   return buildMetadata({
     title: content.title,

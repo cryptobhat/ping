@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth';
 import { userApi, uploadApi } from '@/lib/api';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -177,7 +178,15 @@ export default function EditProfilePage() {
             <label className="block text-sm font-medium text-warm-700 dark:text-warm-300 mb-2">Cover Image</label>
             <div className="relative rounded-2xl overflow-hidden border border-warm-200 dark:border-warm-800">
               {coverImage ? (
-                <img src={coverImage} alt="Cover" className="w-full aspect-[2/1] object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <FallbackImage
+                  src={coverImage}
+                  alt="Cover"
+                  className="w-full aspect-[2/1] object-cover"
+                  fallbackClassName="w-full aspect-[2/1] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-warm-400"
+                  fallbackIcon={Camera}
+                  fallbackIconClassName="w-8 h-8 text-warm-400"
+                  loading="eager"
+                />
               ) : (
                 <div className="w-full aspect-[2/1] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-warm-400">
                   <Camera className="w-8 h-8" />

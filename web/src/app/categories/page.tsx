@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { categoryApi } from '@/lib/api';
 import { BookOpen, Tag } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 
 const GRADIENTS = [
   'from-rose-500 to-pink-600', 'from-violet-500 to-purple-600', 'from-blue-500 to-cyan-600',
@@ -54,12 +55,13 @@ export default function CategoriesPage() {
             className="group relative overflow-hidden rounded-xl aspect-[3/2]"
           >
             {cat.iconUrl ? (
-              <img
+              <FallbackImage
                 src={cat.iconUrl}
                 alt={cat.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                fallbackClassName={`w-full h-full bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}
+                fallbackIcon={BookOpen}
+                fallbackIconClassName="w-8 h-8 text-white/30"
               />
             ) : (
               <div className={`w-full h-full bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>

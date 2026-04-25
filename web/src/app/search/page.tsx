@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 
 const RECENT_SEARCHES_KEY = 'kalaloka_recent_searches';
 const MAX_RECENT = 8;
@@ -175,12 +176,13 @@ export default function SearchPage() {
                       <div className="bg-white dark:bg-warm-900 rounded-2xl border border-warm-100 dark:border-warm-800 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all group">
                         <div className="relative aspect-[2/1] overflow-hidden bg-warm-100 dark:bg-warm-800">
                           {item.coverImage ? (
-                            <img
+                            <FallbackImage
                               src={item.coverImage}
                               alt=""
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              loading="lazy"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
+                              fallbackIcon={BookOpen}
+                              fallbackIconClassName="w-10 h-10 text-warm-300 dark:text-warm-500"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-warm-400">

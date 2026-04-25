@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth';
 import { ContentCard } from '@/components/content/ContentCard';
 import { BookCard } from '@/components/content/BookCard';
 import { Avatar } from '@/components/ui/Avatar';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -212,12 +213,12 @@ export default function UserProfilePage() {
     <div className="pb-8">
       <div className="h-32 lg:h-40 bg-gradient-to-r from-primary/15 via-accent/10 to-primary/10 relative overflow-hidden">
         {profile.coverImage && (
-          <img
+          <FallbackImage
             src={profile.coverImage}
             alt=""
             className="w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            fallbackClassName="w-full h-full"
+            fallbackIconClassName="w-0 h-0"
           />
         )}
       </div>

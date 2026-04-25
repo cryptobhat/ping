@@ -20,6 +20,8 @@ import {
 import { cn, formatNumber, formatDate, readingTime } from '@/lib/utils';
 import Link from 'next/link';
 import { getReadingLang } from '@/lib/reading-lang';
+import { stripHtml } from '@/lib/html-utils';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 
 const contentTypes = [
   { value: '', label: 'All', icon: Compass },
@@ -255,12 +257,13 @@ function DiscoverContent() {
                   <div className="relative overflow-hidden rounded-xl aspect-[3/2]">
                     {cat.iconUrl || cat.image ? (
                       <>
-                        <img
+                        <FallbackImage
                           src={cat.iconUrl || cat.image}
                           alt={cat.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          fallbackClassName={cn('w-full h-full bg-gradient-to-br', gradients[i % gradients.length], 'group-hover:scale-105 transition-transform duration-500')}
+                          fallbackIcon={BookOpen}
+                          fallbackIconClassName="w-0 h-0"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                       </>
@@ -334,12 +337,13 @@ function DiscoverContent() {
                   <div className="flex flex-col lg:flex-row">
                     {first.coverImage && (
                       <div className="lg:w-2/5 aspect-[2/1] lg:aspect-auto lg:min-h-[240px] overflow-hidden relative bg-warm-100 dark:bg-warm-800">
-                        <img
+                        <FallbackImage
                           src={first.coverImage}
                           alt={first.title}
                           className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                          loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
+                          fallbackIcon={BookOpen}
+                          fallbackIconClassName="w-10 h-10 text-warm-300 dark:text-warm-500"
                         />
                         {first.rating && (
                           <div className="absolute top-3 left-3 flex items-center gap-0.5 bg-green-600/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
@@ -357,7 +361,7 @@ function DiscoverContent() {
                         )}
                       </div>
                       <h3 className="text-xl lg:text-2xl font-bold text-warm-900 dark:text-warm-50 mb-2 group-hover:text-primary transition-colors">{first.title}</h3>
-                      <p className="text-sm text-warm-500 line-clamp-2 mb-4 leading-relaxed">{first.excerpt || first.body?.slice(0, 150)}</p>
+                      <p className="text-sm text-warm-500 line-clamp-2 mb-4 leading-relaxed">{first.excerpt || (first.body ? stripHtml(first.body).slice(0, 150) : '')}</p>
                       <div className="flex items-center gap-3">
                         <Avatar src={author.profileImage} name={author.name || 'User'} size="sm" />
                         <div>
@@ -578,7 +582,7 @@ function DiscoverContent() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm text-warm-900 dark:text-warm-100 group-hover:text-primary transition-colors line-clamp-1 mb-0.5">{poem.title}</h4>
-                      <p className="text-xs text-warm-500 line-clamp-2 leading-relaxed mb-2">{poem.excerpt || poem.body?.slice(0, 100)}</p>
+                      <p className="text-xs text-warm-500 line-clamp-2 leading-relaxed mb-2">{poem.excerpt || (poem.body ? stripHtml(poem.body).slice(0, 100) : '')}</p>
                       <div className="flex items-center gap-2">
                         <Avatar src={author.profileImage} name={author.name || 'User'} size="xs" />
                         <span className="text-[10px] text-warm-500">{author.name}</span>

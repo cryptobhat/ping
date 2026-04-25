@@ -17,6 +17,7 @@ import {
 import { cn, formatDate, formatNumber, readingTime, getContentTypeEmoji } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { ShareButtons } from '@/components/share/ShareButtons';
 import { ReportContentModal } from '@/components/moderation/ReportContentModal';
 import { AdSenseSlot } from '@/components/ads/AdSenseSlot';
@@ -545,12 +546,13 @@ export default function ContentPage() {
             <div className="max-w-2xl mx-auto px-4 lg:px-0 lg:mx-0 lg:flex-1 lg:max-w-3xl py-8 pb-28 lg:pb-8">
               {content.coverImage && (
                 <div className="rounded-2xl overflow-hidden mb-8 aspect-[2/1] bg-warm-100 dark:bg-warm-800">
-                  <img
+                  <FallbackImage
                     src={content.coverImage}
                     alt={content.title}
                     className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
+                    fallbackIcon={BookOpen}
+                    fallbackIconClassName="w-12 h-12 text-warm-300 dark:text-warm-500"
                   />
                 </div>
               )}
@@ -865,7 +867,7 @@ export default function ContentPage() {
                         <Link key={story.id} href={`/content/${story.id}`} className="flex items-center gap-3 group">
                           <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-warm-100 dark:bg-warm-800">
                             {story.coverImage ? (
-                              <img src={story.coverImage} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <FallbackImage src={story.coverImage} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center" fallbackIcon={BookOpen} fallbackIconClassName="w-5 h-5 text-warm-300 dark:text-warm-500" />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"><BookOpen className="w-5 h-5 text-warm-300" /></div>
                             )}
@@ -1048,7 +1050,7 @@ export default function ContentPage() {
                       <Link key={story.id} href={`/content/${story.id}`} className="flex items-center gap-3 group">
                         <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-warm-100 dark:bg-warm-800">
                           {story.coverImage ? (
-                            <img src={story.coverImage} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            <FallbackImage src={story.coverImage} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center" fallbackIcon={BookOpen} fallbackIconClassName="w-5 h-5 text-warm-300 dark:text-warm-500" />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"><BookOpen className="w-5 h-5 text-warm-300" /></div>
                           )}

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { stripHtml } from '@/lib/html-utils';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kalaloka.buzz';
 const SITE_NAME = 'Kalaloka';
@@ -65,7 +66,7 @@ export function articleJsonLd(content: any, author: any) {
     '@context': 'https://schema.org',
     '@type': content.contentType === 'POEM' ? 'CreativeWork' : 'Article',
     headline: content.title,
-    description: content.excerpt || content.body?.slice(0, 160),
+    description: content.excerpt || (content.body ? stripHtml(content.body).slice(0, 160) : ''),
     image: content.coverImage || DEFAULT_IMAGE,
     datePublished: content.createdAt,
     dateModified: content.updatedAt || content.createdAt,

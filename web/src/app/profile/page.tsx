@@ -6,6 +6,7 @@ import { contentApi, seriesApi } from '@/lib/api';
 import { ContentCard } from '@/components/content/ContentCard';
 import { BookCard } from '@/components/content/BookCard';
 import { Avatar } from '@/components/ui/Avatar';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -93,12 +94,12 @@ export default function ProfilePage() {
       {/* Cover Image - full width */}
       <div className="h-32 sm:h-44 lg:h-56 xl:h-64 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/10 dark:from-primary/10 dark:via-accent/5 dark:to-primary/5 relative overflow-hidden">
         {profile.coverImage && (
-          <img
+          <FallbackImage
             src={profile.coverImage}
             alt=""
             className="w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            fallbackClassName="w-full h-full"
+            fallbackIconClassName="w-0 h-0"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />

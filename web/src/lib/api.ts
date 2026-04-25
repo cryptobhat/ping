@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getReadingLang, stashPostAuthRedirect } from '@/lib/reading-lang';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.kalaloka.buzz';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://kavi-api.digiyogi.com';
 
 const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
