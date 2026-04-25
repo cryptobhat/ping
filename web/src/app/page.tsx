@@ -341,7 +341,7 @@ export default function HomePage() {
           href="/discover?tab=series"
         />
         {allSeries.length === 0 ? (
-          <p className="text-sm text-warm-500 py-6 text-center">{cx('emptyFeed', 'Nothing here yet — try Discover or another language.')}</p>
+          <p className="text-sm text-warm-500 py-6 text-center">{cx('emptyFeed', "We don't have stories in this language yet. Browse Discover or switch language to find more.")}</p>
         ) : (
           <HScroll>
             {allSeries.slice(0, 6).map((s: any, i: number) => (

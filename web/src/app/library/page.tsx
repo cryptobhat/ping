@@ -230,7 +230,7 @@ export default function LibraryPage() {
                     icon={FileText}
                     title="No drafts"
                     description="Your unpublished work will appear here"
-                    actionLabel="Start Writing"
+                    actionLabel="Write a story"
                     onAction={() => window.location.href = '/create'}
                   />
                 ) : (

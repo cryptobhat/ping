@@ -2,10 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { X, Smartphone } from 'lucide-react';
+import { getReadingLang } from '@/lib/reading-lang';
+import { t } from '@/lib/copy';
 
 export function SmartAppBanner() {
   const [show, setShow] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [lang, setLang] = useState('en');
+
+  useEffect(() => {
+    setLang(getReadingLang() || 'en');
+  }, []);
 
   useEffect(() => {
     // Don't show in native app (Capacitor)
@@ -43,7 +50,7 @@ export function SmartAppBanner() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold">Kalaloka</p>
-        <p className="text-[11px] text-warm-400">Better experience in the app</p>
+        <p className="text-[11px] text-warm-400">{t('appBannerValueProp', lang)}</p>
       </div>
       <a
         href={appLink}

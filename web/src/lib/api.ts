@@ -17,10 +17,36 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * Map an HTTP status to a user-facing English message.
+ * Kept in English for now — once the i18n pipeline catches up, route this
+ * through `t()` in `lib/copy.ts` and add per-locale variants.
+ */
+function userMessageForStatus(status: number | undefined): string {
+  if (!status) return 'Network issue. Check your connection and try again.';
+  if (status === 401) return 'You need to sign in to continue.';
+  if (status === 403) return "You don't have access to this.";
+  if (status === 404) return "We couldn't find that.";
+  if (status === 429) return 'Too many requests — wait a moment and try again.';
+  if (status >= 500) return 'Our servers had an issue. Please try again.';
+  return 'Something didn’t work. Please try again.';
+}
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    // Attach a user-facing message so toast/snackbar callers can prefer
+    // `error.userMessage` over the raw axios string.
+    const status = error?.response?.status;
+    if (error && typeof error === 'object') {
+      try {
+        (error as any).userMessage = userMessageForStatus(status);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       const path = window.location.pathname + window.location.search;

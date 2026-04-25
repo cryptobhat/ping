@@ -83,7 +83,7 @@ export default function ProfilePage() {
       <div className="px-4 py-16 max-w-lg mx-auto text-center">
         <EmptyState icon={BookOpen} title="Your profile" description="Sign in to see your stories, series, and drafts." />
         <Link href="/login?next=/profile" className="mt-6 inline-block text-primary font-semibold hover:underline">
-          Sign in
+          Sign in to your profile
         </Link>
       </div>
     );
@@ -259,7 +259,7 @@ export default function ProfilePage() {
             icon={BookOpen}
             title={`No ${activeTab} yet`}
             description={activeTab === 'drafts' ? 'Your drafts will appear here' : 'Start writing to see your work here'}
-            actionLabel="Start Writing"
+            actionLabel="Write a story"
             onAction={() => window.location.href = '/create'}
           />
         ) : activeTab === 'series' ? (

@@ -97,9 +97,9 @@ export default function NotificationsPage() {
   if (!isAuthenticated) {
     return (
       <div className="px-4 lg:px-8 py-16 max-w-lg mx-auto text-center">
-        <EmptyState icon={Bell} title="Sign in to see notifications" description="Your likes, comments, and follows show up here." />
+        <EmptyState icon={Bell} title="See your notifications" description="Likes, comments, and follows show up here." />
         <Link href="/login?next=/notifications" className="mt-6 inline-block text-primary font-semibold hover:underline">
-          Sign in
+          Sign in to view
         </Link>
       </div>
     );

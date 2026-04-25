@@ -160,7 +160,7 @@ export default function FavoritesPage() {
             icon={Heart}
             title="No favorites yet"
             description="Tap the heart on any story to save it here."
-            actionLabel="Discover Content"
+            actionLabel="Browse Discover"
             onAction={() => window.location.href = '/discover'}
           />
         ) : (

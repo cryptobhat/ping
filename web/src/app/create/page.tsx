@@ -725,11 +725,11 @@ function CreatePageInner() {
             </button>
             {!isEditing && (
               <Button variant="ghost" size="sm" onClick={() => publish(true)} loading={saving} className="text-xs px-2">
-                Draft
+                Save draft
               </Button>
             )}
             <Button size="sm" onClick={() => publish(false)} loading={publishing} icon={<Send className="w-3.5 h-3.5" />}>
-              {isEditing ? 'Update' : 'Publish'}
+              {isEditing ? 'Save changes' : 'Publish story'}
             </Button>
           </div>
         </div>

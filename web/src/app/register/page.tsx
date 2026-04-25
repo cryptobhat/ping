@@ -306,7 +306,7 @@ export default function RegisterPage() {
             <div className="flex gap-3 mt-8">
               <Button variant="outline" onClick={() => setStep(2)} icon={<ArrowLeft className="w-4 h-4" />}>Back</Button>
               <Button onClick={handleNext} className="flex-1" size="lg" icon={<ArrowRight className="w-4 h-4" />}>
-                {phone.length === 10 ? 'Continue' : 'Skip'}
+                {phone.length === 10 ? 'Send code' : 'Skip for now'}
               </Button>
             </div>
           </div>

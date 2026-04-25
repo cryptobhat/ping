@@ -3,13 +3,20 @@
 import { useEffect, useState } from 'react';
 import { X, Crown, Check, Zap, Shield, BookOpen, Star, Gift } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
+import { getReadingLang } from '@/lib/reading-lang';
+import { t } from '@/lib/copy';
 import Link from 'next/link';
 
 const BOT_UA_RE = /Googlebot|bingbot|YandexBot|Baiduspider|DuckDuckBot|Slurp/i;
 
 export function SubscriptionModal() {
   const [show, setShow] = useState(false);
+  const [lang, setLang] = useState('en');
   const { user, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    setLang(getReadingLang() || 'en');
+  }, []);
 
   useEffect(() => {
     // Skip modal entirely for premium users
@@ -93,7 +100,7 @@ export function SubscriptionModal() {
               <span className="text-5xl font-black">₹11</span>
               <span className="text-lg text-white/70 font-medium">/month</span>
             </div>
-            <p className="text-sm text-white/80">Less than a cup of chai ☕</p>
+            <p className="text-sm text-white/80">{t('subChaiHeadline', lang)}</p>
           </div>
         </div>
 

@@ -83,18 +83,17 @@ function WelcomeContent() {
           Read in the language you love
         </h1>
         <p className="text-sm text-warm-500 text-center mb-1 leading-relaxed max-w-md">
-          Your home feed and discovery prioritize this language first. One tap to set it — change anytime from{' '}
-          <span className="text-warm-700 dark:text-warm-300 font-medium">Feed language</span> in the sidebar.
+          Pick your language. We&apos;ll show stories in it from the start.
         </p>
         {!signingInAfter && (
           <p className="text-xs text-warm-400 text-center mb-6 max-w-sm flex items-start justify-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-            <span>No account needed to browse. Sign in when you want to write, message, or sync your library.</span>
+            <span>No account needed to browse. Sign in to write, message, or sync your library.</span>
           </p>
         )}
         {signingInAfter && (
           <p className="text-xs text-warm-400 text-center mb-6 max-w-sm">
-            We ask for language before your phone number so your first screen after sign-in already feels like home.
+            Choose now — your feed will be ready in this language right after sign-in.
           </p>
         )}
 
