@@ -29,7 +29,7 @@ export function TopBar() {
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className="text-lg font-bold text-warm-900 dark:text-warm-50 truncate max-w-[120px]">Kalaloka</span>
+          <span className="text-lg font-bold text-warm-900 dark:text-warm-50 truncate max-w-[100px] sm:max-w-[140px]">Kalaloka</span>
         </Link>
 
         {/* Actions */}
@@ -41,7 +41,7 @@ export function TopBar() {
             <Bell className="w-5 h-5 text-warm-600 dark:text-warm-400" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-white dark:ring-warm-950" />
           </Link>
-          <Link href="/chat" className="flex items-center justify-center w-11 h-11 hover:bg-warm-100 dark:hover:bg-warm-800 rounded-xl transition-colors">
+          <Link href="/chat" className="hidden sm:inline-flex items-center justify-center w-11 h-11 hover:bg-warm-100 dark:hover:bg-warm-800 rounded-xl transition-colors">
             <MessageCircle className="w-5 h-5 text-warm-600 dark:text-warm-400" />
           </Link>
           {isAuthenticated && user ? (

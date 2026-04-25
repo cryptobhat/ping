@@ -110,65 +110,66 @@ export default function ProfilePage() {
       {/* Profile Content Container - centered and max-width */}
       <div className="max-w-5xl mx-auto px-4 lg:px-8">
         {/* Profile Header */}
-        <div className="-mt-12 sm:-mt-16 lg:-mt-20 relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-6">
-            {/* Avatar */}
+        <div className="-mt-10 sm:-mt-14 lg:-mt-20 relative z-10">
+          {/* Avatar + identity row — stacks on mobile, side-by-side on md+ */}
+          <div className="flex flex-col md:flex-row md:items-end md:gap-5 mb-4 md:mb-5">
             <Avatar
               src={profile.profileImage}
               name={profile.name}
               size="2xl"
               border
-              className="ring-4 ring-white dark:ring-warm-950"
+              className="ring-4 ring-white dark:ring-warm-950 shrink-0"
             />
-
-            {/* Name and Actions */}
-            <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-1">
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Heading level={2} as="h1">{profile.name}</Heading>
-                  {profile.isVerified && <CheckCircle className="w-5 h-5 text-primary fill-primary/20" />}
-                  {profile.isPremium && <Badge variant="warning" size="sm">Premium</Badge>}
-                </div>
-                <p className="text-sm text-warm-500 mt-0.5">@{profile.username}</p>
+            <div className="mt-3 md:mt-0 md:pb-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Heading level={2} as="h1">{profile.name}</Heading>
+                {profile.isVerified && <CheckCircle className="w-5 h-5 text-primary fill-primary/20" />}
+                {profile.isPremium && <Badge variant="warning" size="sm">Premium</Badge>}
               </div>
+              <p className="text-sm text-warm-500 mt-0.5">@{profile.username}</p>
+            </div>
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 flex-wrap">
-                <Link href="/settings/edit-profile">
-                  <Button variant="outline" size="sm" icon={<Edit className="w-3.5 h-3.5" />}>
-                    Edit Profile
-                  </Button>
+          {/* Action buttons — own row, wraps on mobile */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            <Link href="/settings/edit-profile">
+              <Button variant="outline" size="sm" icon={<Edit className="w-3.5 h-3.5" />}>
+                Edit Profile
+              </Button>
+            </Link>
+            <Link href="/wallet">
+              <Button variant="secondary" size="sm" icon={<Wallet className="w-3.5 h-3.5" />}>
+                Wallet
+              </Button>
+            </Link>
+            {!profile.isPremium && (
+              <Link href="/subscription">
+                <Button variant="primary" size="sm" icon={<Star className="w-3.5 h-3.5" />}>
+                  Premium
+                </Button>
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Quick Links — horizontal scroll on small screens, grid on md+ */}
+          <div className="lg:hidden mb-6">
+            <div className="flex md:grid md:grid-cols-5 gap-2 overflow-x-auto md:overflow-visible -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scrollbar-hide">
+              {([
+                { href: '/settings', Icon: Settings, label: 'Settings', color: 'text-warm-600 dark:text-warm-400' },
+                { href: '/notifications', Icon: Bell, label: 'Alerts', color: 'text-primary' },
+                { href: '/live', Icon: Radio, label: 'Live', color: 'text-red-500' },
+                { href: '/leaderboard', Icon: Trophy, label: 'Leaders', color: 'text-amber-500' },
+                { href: '/competitions', Icon: Target, label: 'Contests', color: 'text-emerald-500' },
+              ] as const).map(({ href, Icon, label, color }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex-shrink-0 md:flex-shrink snap-start min-w-[68px] md:min-w-0 flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl bg-warm-50 dark:bg-warm-900 border border-warm-100 dark:border-warm-800 hover:border-primary/30 transition-colors"
+                >
+                  <Icon className={`w-5 h-5 ${color}`} />
+                  <span className="text-[10px] font-medium text-warm-600 dark:text-warm-400">{label}</span>
                 </Link>
-                <Link href="/wallet">
-                  <Button variant="secondary" size="sm" icon={<Wallet className="w-3.5 h-3.5" />}>
-                    Wallet
-                  </Button>
-                </Link>
-                {!profile.isPremium && (
-                  <Link href="/subscription">
-                    <Button variant="primary" size="sm" icon={<Star className="w-3.5 h-3.5" />}>
-                      Premium
-                    </Button>
-                  </Link>
-                )}
-              </div>
-
-              {/* Mobile Quick Links (visible only on mobile — replaces sidebar) */}
-              <div className="lg:hidden mt-4 grid grid-cols-5 gap-1.5">
-                {([
-                  { href: '/settings', Icon: Settings, label: 'Settings', color: 'text-warm-600 dark:text-warm-400' },
-                  { href: '/notifications', Icon: Bell, label: 'Alerts', color: 'text-primary' },
-                  { href: '/live', Icon: Radio, label: 'Live', color: 'text-red-500' },
-                  { href: '/leaderboard', Icon: Trophy, label: 'Leaders', color: 'text-amber-500' },
-                  { href: '/competitions', Icon: Target, label: 'Contests', color: 'text-emerald-500' },
-                ] as const).map(({ href, Icon, label, color }) => (
-                  <Link key={href} href={href} className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-warm-50 dark:bg-warm-900 border border-warm-100 dark:border-warm-800 hover:border-primary/30 transition-colors">
-                    <Icon className={`w-5 h-5 ${color}`} />
-                    <span className="text-[10px] font-medium text-warm-600 dark:text-warm-400">{label}</span>
-                  </Link>
-                ))}
-              </div>
-
+              ))}
             </div>
           </div>
 

@@ -21,8 +21,8 @@ export function MobileNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-warm-900/95 backdrop-blur-xl border-t border-warm-200 dark:border-warm-800 z-40 lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} aria-label="Mobile navigation">
-      <div className="flex items-center justify-around px-2 py-1.5">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-warm-900/95 backdrop-blur-xl border-t border-warm-200 dark:border-warm-800 z-40 lg:hidden pointer-events-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} aria-label="Mobile navigation">
+      <div className="flex items-center justify-around px-2 pt-1.5 pb-2 sm:pb-1.5">
         {tabs.map(({ href, icon: Icon, label }) => (
           <Link
             key={href}
@@ -42,7 +42,7 @@ export function MobileNav() {
             />
             <span
               className={cn(
-                'text-[10px] font-medium transition-colors',
+                'text-[10px] sm:text-xs font-medium transition-colors',
                 isActive(href) ? 'text-primary' : 'text-warm-400'
               )}
             >

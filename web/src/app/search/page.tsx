@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { FallbackImage } from '@/components/ui/FallbackImage';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { Chip } from '@/components/ui/Chip';
+import { useMediaQuery } from '@/lib/use-media-query';
 
 const RECENT_SEARCHES_KEY = 'kalaloka_recent_searches';
 const MAX_RECENT = 8;
@@ -50,6 +51,9 @@ export default function SearchPage() {
   const [results, setResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Only autoFocus on desktop — on mobile this forces the keyboard up which
+  // pushes content and feels jarring as a navigation arrival experience.
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   // Real data states
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -145,7 +149,7 @@ export default function SearchPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search stories, poems, articles, writers..."
           className="flex-1 bg-transparent text-warm-900 dark:text-warm-100 outline-none placeholder:text-warm-400"
-          autoFocus
+          autoFocus={isDesktop}
         />
         {query && (
           <button type="button" onClick={() => setQuery('')} className="p-1 hover:bg-warm-100 dark:hover:bg-warm-800 rounded-lg">

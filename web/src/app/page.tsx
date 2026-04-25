@@ -504,9 +504,9 @@ export default function HomePage() {
             return (
               <Link href={`/content/${first.id}`} className="group lg:col-span-2">
                 <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-warm-900 border border-warm-100 dark:border-warm-800 hover:border-primary/20 transition-all hover:shadow-lg">
-                  <div className="flex flex-col lg:flex-row">
+                  <div className="flex flex-col md:flex-row">
                     {first.coverImage && (
-                      <div className="lg:w-2/5 aspect-[2/1] lg:aspect-auto lg:min-h-[220px] overflow-hidden relative bg-warm-100 dark:bg-warm-800">
+                      <div className="md:w-2/5 aspect-[2/1] md:aspect-auto md:min-h-[220px] overflow-hidden relative bg-warm-100 dark:bg-warm-800">
                         <FallbackImage
                           src={first.coverImage}
                           alt={first.title}

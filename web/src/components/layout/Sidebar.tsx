@@ -93,7 +93,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-white dark:bg-warm-900 border-r border-warm-200 dark:border-warm-800 flex flex-col z-40 hidden lg:flex">
+    <aside className="fixed left-0 top-0 bottom-0 w-[260px] xl:w-[280px] bg-white dark:bg-warm-900 border-r border-warm-200 dark:border-warm-800 flex flex-col z-40 hidden lg:flex">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-warm-100 dark:border-warm-800">
         <Link href="/" className="flex items-center gap-2.5">

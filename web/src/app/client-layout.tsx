@@ -150,10 +150,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       {!isChatConversation && <TopBar />}
       <main id="main-content" className={cn(
         'min-h-screen',
-        !isNativeApp && 'lg:ml-[260px]',
+        !isNativeApp && 'lg:ml-[260px] xl:ml-[280px]',
         isChatConversation ? 'pb-0' : isNativeApp ? 'pb-16' : 'pb-24 lg:pb-0'
       )}>
-        <div className={isChatConversation ? '' : 'max-w-5xl mx-auto'}>
+        <div className={isChatConversation ? '' : 'max-w-7xl mx-auto'}>
           {children}
           {!isChatConversation && !isNativeApp && (
             <div className="px-4 lg:px-6 pb-6 pt-2">

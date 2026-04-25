@@ -19,7 +19,7 @@ import { Chip } from '@/components/ui/Chip';
 import {
   Search, Hash, Compass, TrendingUp, Filter, Flame, Star, Eye, Heart,
   BookOpen, Feather, FileText, ArrowRight, ChevronRight, Clock, ThumbsUp, Tag,
-  Trophy, Crown, Medal,
+  Trophy, Crown, Medal, X, SlidersHorizontal,
 } from 'lucide-react';
 import { cn, formatNumber, formatDate, readingTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -53,8 +53,27 @@ function DiscoverContent() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
   const lang = getReadingLang();
+
+  // Number of non-default filters currently applied (mobile chip badge)
+  const activeFilterCount =
+    (activeSort !== 'latest' ? 1 : 0) +
+    (activeCategoryId ? 1 : 0) +
+    (activeType ? 1 : 0);
+
+  // Lock body scroll while sheet is open
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (filterSheetOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFilterSheetOpen(false); };
+      document.addEventListener('keydown', onKey);
+      return () => { document.body.style.overflow = prev; document.removeEventListener('keydown', onKey); };
+    }
+  }, [filterSheetOpen]);
 
   useEffect(() => {
     loadInitialData();
@@ -395,57 +414,186 @@ function DiscoverContent() {
           </div>
         </div>
 
-        {/* Sort tabs */}
-        <Tabs
-          ariaLabel="Sort content"
-          activeId={activeSort}
-          onChange={(id) => setActiveSort(id as typeof activeSort)}
-          className="mb-4 -mx-4 px-4 lg:mx-0 lg:px-0"
-          tabs={[
-            { id: 'latest', label: 'Latest', icon: <Clock className="w-3.5 h-3.5" /> },
-            { id: 'popular', label: 'Popular', icon: <TrendingUp className="w-3.5 h-3.5" /> },
-            { id: 'top_rated', label: 'Top Rated', icon: <ThumbsUp className="w-3.5 h-3.5" /> },
-          ]}
-        />
+        {/* Mobile / tablet: single Filters trigger that opens a bottom sheet.
+            Three independent overflow-x rows are exhausting on a small viewport. */}
+        <div className="lg:hidden mb-6">
+          <button
+            type="button"
+            onClick={() => setFilterSheetOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={filterSheetOpen}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-warm-200 dark:border-warm-700 bg-white dark:bg-warm-900 hover:border-primary/40 transition-colors text-sm font-medium text-warm-700 dark:text-warm-300"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>Filters{activeFilterCount > 0 && ` · ${activeFilterCount}`}</span>
+          </button>
+        </div>
 
-        {/* Category filter pills */}
-        {allCategories.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 mt-4">
-            <Chip
-              size="md"
-              active={!activeCategoryId}
-              onClick={() => setActiveCategoryId('')}
-              icon={<Tag className="w-3 h-3" />}
-            >
-              All genres
-            </Chip>
-            {allCategories.filter((c: any) => c.isActive !== false).map((cat: any) => (
+        {/* Desktop: keep inline filter rows */}
+        <div className="hidden lg:block">
+          <Tabs
+            ariaLabel="Sort content"
+            activeId={activeSort}
+            onChange={(id) => setActiveSort(id as typeof activeSort)}
+            className="mb-4"
+            tabs={[
+              { id: 'latest', label: 'Latest', icon: <Clock className="w-3.5 h-3.5" /> },
+              { id: 'popular', label: 'Popular', icon: <TrendingUp className="w-3.5 h-3.5" /> },
+              { id: 'top_rated', label: 'Top Rated', icon: <ThumbsUp className="w-3.5 h-3.5" /> },
+            ]}
+          />
+
+          {allCategories.length > 0 && (
+            <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1 mt-4">
               <Chip
-                key={cat.id}
                 size="md"
-                active={activeCategoryId === cat.id}
-                onClick={() => setActiveCategoryId(cat.id)}
+                active={!activeCategoryId}
+                onClick={() => setActiveCategoryId('')}
+                icon={<Tag className="w-3 h-3" />}
               >
-                {cat.name}
+                All genres
+              </Chip>
+              {allCategories.filter((c: any) => c.isActive !== false).map((cat: any) => (
+                <Chip
+                  key={cat.id}
+                  size="md"
+                  active={activeCategoryId === cat.id}
+                  onClick={() => setActiveCategoryId(cat.id)}
+                >
+                  {cat.name}
+                </Chip>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1">
+            {contentTypes.map(({ value, label, icon: Icon }) => (
+              <Chip
+                key={value}
+                size="md"
+                variant={activeType === value ? 'primary' : 'secondary'}
+                onClick={() => setActiveType(value)}
+                icon={<Icon className="w-4 h-4" />}
+              >
+                {label}
               </Chip>
             ))}
           </div>
-        )}
-
-        {/* Content type filter pills */}
-        <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
-          {contentTypes.map(({ value, label, icon: Icon }) => (
-            <Chip
-              key={value}
-              size="md"
-              variant={activeType === value ? 'primary' : 'secondary'}
-              onClick={() => setActiveType(value)}
-              icon={<Icon className="w-4 h-4" />}
-            >
-              {label}
-            </Chip>
-          ))}
         </div>
+
+        {/* Mobile filter bottom-sheet */}
+        {filterSheetOpen && (
+          <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+              onClick={() => setFilterSheetOpen(false)}
+              aria-hidden="true"
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 bg-white dark:bg-warm-900 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col animate-slide-up"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            >
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-warm-100 dark:border-warm-800">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-warm-900 dark:text-warm-100">Filters</h2>
+                  {activeFilterCount > 0 && (
+                    <span className="text-xs text-warm-400">· {activeFilterCount} active</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFilterSheetOpen(false)}
+                  aria-label="Close filters"
+                  className="p-2 -mr-2 rounded-lg hover:bg-warm-100 dark:hover:bg-warm-800"
+                >
+                  <X className="w-5 h-5 text-warm-500" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto px-5 py-4 space-y-6 flex-1">
+                {/* Sort */}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-warm-500 mb-2">Sort by</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { id: 'latest', label: 'Latest', Icon: Clock },
+                      { id: 'popular', label: 'Popular', Icon: TrendingUp },
+                      { id: 'top_rated', label: 'Top Rated', Icon: ThumbsUp },
+                    ] as const).map(({ id, label, Icon }) => (
+                      <Chip
+                        key={id}
+                        size="md"
+                        active={activeSort === id}
+                        onClick={() => setActiveSort(id)}
+                        icon={<Icon className="w-3.5 h-3.5" />}
+                      >
+                        {label}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Categories */}
+                {allCategories.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-warm-500 mb-2">Categories</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Chip size="md" active={!activeCategoryId} onClick={() => setActiveCategoryId('')} icon={<Tag className="w-3 h-3" />}>
+                        All genres
+                      </Chip>
+                      {allCategories.filter((c: any) => c.isActive !== false).map((cat: any) => (
+                        <Chip
+                          key={cat.id}
+                          size="md"
+                          active={activeCategoryId === cat.id}
+                          onClick={() => setActiveCategoryId(cat.id)}
+                        >
+                          {cat.name}
+                        </Chip>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Content type */}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-warm-500 mb-2">Content type</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {contentTypes.map(({ value, label, icon: Icon }) => (
+                      <Chip
+                        key={value}
+                        size="md"
+                        variant={activeType === value ? 'primary' : 'secondary'}
+                        onClick={() => setActiveType(value)}
+                        icon={<Icon className="w-4 h-4" />}
+                      >
+                        {label}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-5 py-3 border-t border-warm-100 dark:border-warm-800">
+                <button
+                  type="button"
+                  onClick={() => { setActiveSort('latest'); setActiveCategoryId(''); setActiveType(''); }}
+                  className="flex-1 py-3 text-sm font-medium text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-warm-100 transition-colors"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterSheetOpen(false)}
+                  className="flex-1 py-3 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Grid -- multi-column on desktop */}
         {loading ? (

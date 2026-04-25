@@ -437,7 +437,7 @@ export default function ContentPage() {
   return (
     <div className="min-h-screen">
       {/* Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-warm-100 dark:bg-warm-800 lg:ml-[260px]">
+      <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-warm-100 dark:bg-warm-800 lg:ml-[260px] xl:ml-[280px]">
         <div className="h-full gradient-primary transition-all duration-150" style={{ width: `${readProgress}%` }} />
       </div>
 
@@ -595,7 +595,7 @@ export default function ContentPage() {
               <div className="relative">
                 <div
                   className={cn(
-                    'reading-content font-serif',
+                    'reading-content font-serif break-words [&_img]:max-w-full [&_img]:h-auto [&_pre]:overflow-x-auto [&_a]:break-words',
                     currentTheme.text,
                     readingLocked && 'max-h-[min(420px,70vh)] overflow-hidden'
                   )}

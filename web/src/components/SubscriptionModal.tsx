@@ -73,7 +73,7 @@ export function SubscriptionModal() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={dismiss} />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 animate-fade-in" onClick={dismiss} aria-hidden="true" />
       <div className="relative w-full max-w-sm mx-4 mb-0 sm:mb-0 bg-white dark:bg-warm-900 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
 
         {/* Close */}
