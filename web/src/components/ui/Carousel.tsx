@@ -10,9 +10,11 @@ interface CarouselProps {
   interval?: number;
   renderItem: (item: any, index: number) => React.ReactNode;
   className?: string;
+  /** Accessible label for the carousel region. Defaults to "Carousel". */
+  ariaLabel?: string;
 }
 
-export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, className }: CarouselProps) {
+export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, className, ariaLabel = 'Carousel' }: CarouselProps) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<NodeJS.Timeout>();
 
@@ -34,33 +36,54 @@ export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, 
   if (!items.length) return null;
 
   return (
-    <div className={cn('relative group', className)}>
-      {/* Slides */}
-      <div className="overflow-hidden rounded-2xl">
+    <div
+      className={cn('relative group', className)}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label={ariaLabel}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go('prev'); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); go('next'); }
+      }}
+    >
+      {/* Slides — aria-live so SR users hear when the slide changes. */}
+      <div className="overflow-hidden rounded-2xl" aria-live="polite">
         <div
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${current * 100}%)` }}
         >
           {items.map((item, i) => (
-            <div key={i} className="w-full flex-shrink-0">
+            <div
+              key={i}
+              className="w-full flex-shrink-0"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Slide ${i + 1} of ${items.length}`}
+              aria-hidden={i !== current}
+            >
               {renderItem(item, i)}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Arrows */}
+      {/* Arrows — visible by default below lg, hover-revealed on lg+. */}
       {items.length > 1 && (
         <>
           <button
+            type="button"
             onClick={() => go('prev')}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 dark:bg-warm-900/90 shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+            aria-label="Previous slide"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 dark:bg-warm-900/90 shadow-lg flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity hover:bg-white"
           >
             <ChevronLeft className="w-4 h-4 text-warm-700" />
           </button>
           <button
+            type="button"
             onClick={() => go('next')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 dark:bg-warm-900/90 shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+            aria-label="Next slide"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 dark:bg-warm-900/90 shadow-lg flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity hover:bg-white"
           >
             <ChevronRight className="w-4 h-4 text-warm-700" />
           </button>
@@ -73,6 +96,9 @@ export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, 
           {items.map((_, i) => (
             <button
               key={i}
+              type="button"
+              aria-label={`Go to slide ${i + 1}`}
+              aria-current={i === current ? 'true' : undefined}
               onClick={() => { clearInterval(timerRef.current); setCurrent(i); }}
               className={cn(
                 'h-1.5 rounded-full transition-all duration-300',

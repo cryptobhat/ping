@@ -101,7 +101,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
             {content.coverImage && !imgError ? (
               <Image
                 src={content.coverImage}
-                alt=""
+                alt={(content.title || '').slice(0, 100)}
                 fill
                 sizes="96px"
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -132,7 +132,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
               {content.coverImage && !imgError ? (
                 <Image
                   src={content.coverImage}
-                  alt=""
+                  alt={(content.title || '').slice(0, 100)}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -225,7 +225,7 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
             {!coverImgError ? (
               <Image
                 src={content.coverImage}
-                alt=""
+                alt={(content.title || '').slice(0, 100)}
                 fill
                 sizes="(max-width: 768px) 100vw, 720px"
                 className="object-cover group-hover:scale-[1.02] transition-transform duration-500"

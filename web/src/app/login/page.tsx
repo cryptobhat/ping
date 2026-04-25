@@ -54,6 +54,7 @@ function LoginForm() {
   const [facebookLoading, setFacebookLoading] = useState(false);
   const [langGate, setLangGate] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [srStatus, setSrStatus] = useState('');
   const googleInitRef = useRef(false);
   const [googleBtnRendered, setGoogleBtnRendered] = useState(false);
 
@@ -258,25 +259,36 @@ function LoginForm() {
   };
 
   const handleSendOtp = async () => {
-    if (phone.length !== 10) return toast.error('Enter a valid 10-digit phone number');
+    if (phone.length !== 10) {
+      setSrStatus('Enter a valid 10-digit phone number');
+      return toast.error('Enter a valid 10-digit phone number');
+    }
     const e164 = toIndiaE164(phone);
     setLoading(true);
+    setSrStatus('Sending OTP');
     try {
       await authApi.sendOtp(e164);
       setStep('otp');
       setResendTimer(30);
+      setSrStatus('OTP sent');
       toast.success('OTP sent!');
     } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Failed to send OTP');
+      const msg = e.response?.data?.message || 'Failed to send OTP';
+      setSrStatus(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 6) return toast.error('Enter a valid 6-digit OTP');
+    if (otp.length !== 6) {
+      setSrStatus('Enter a valid 6-digit OTP');
+      return toast.error('Enter a valid 6-digit OTP');
+    }
     const e164 = toIndiaE164(phone);
     setLoading(true);
+    setSrStatus('Verifying OTP');
     try {
       const { data } = await authApi.verifyOtp(e164, otp);
       const result = data.data || data;
@@ -305,7 +317,9 @@ function LoginForm() {
         }
       }
     } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Invalid OTP');
+      const msg = e.response?.data?.message || 'Invalid OTP';
+      setSrStatus(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -372,6 +386,10 @@ function LoginForm() {
             {step === 'phone' ? 'Sign in with your phone number' : `We sent a 6-digit code to +91 ${phone}`}
           </p>
 
+          {/* Screen-reader-only live region. Visible toasts handle sighted users;
+              this announces OTP send/verify state to assistive tech. */}
+          <div role="status" aria-live="polite" className="sr-only">{srStatus}</div>
+
           {step === 'phone' ? (
             <div className="space-y-4">
               <div>
@@ -381,7 +399,10 @@ function LoginForm() {
                   <div className="w-px h-5 bg-warm-200 dark:bg-warm-700" />
                   <input
                     type="tel"
-                    inputMode="numeric"
+                    inputMode="tel"
+                    pattern="[0-9]{10}"
+                    autoComplete="tel-national"
+                    aria-label="Phone number"
                     maxLength={10}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
@@ -470,9 +491,11 @@ function LoginForm() {
                       key={i}
                       type="text"
                       inputMode="numeric"
+                      pattern="\d*"
+                      autoComplete={i === 0 ? 'one-time-code' : 'off'}
                       maxLength={1}
                       value={otp[i] || ''}
-                      aria-label={`Digit ${i + 1} of 6`}
+                      aria-label={`OTP digit ${i + 1}`}
                       onPaste={(e) => {
                         e.preventDefault();
                         const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
@@ -528,11 +551,14 @@ function LoginForm() {
                   <button
                     onClick={async () => {
                       const e164 = toIndiaE164(phone);
+                      setSrStatus('Resending OTP');
                       try {
                         await authApi.sendOtp(e164);
                         setResendTimer(30);
+                        setSrStatus('OTP resent');
                         toast.success('OTP resent!');
                       } catch {
+                        setSrStatus('Failed to resend OTP');
                         toast.error('Failed to resend OTP');
                       }
                     }}

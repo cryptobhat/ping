@@ -47,6 +47,8 @@ export function Sidebar() {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('');
   const langDropdownRef = useRef<HTMLDivElement>(null);
+  const langListboxRef = useRef<HTMLUListElement>(null);
+  const [langActiveIdx, setLangActiveIdx] = useState(0);
 
   useEffect(() => {
     const code = getReadingLang();
@@ -54,18 +56,29 @@ export function Sidebar() {
     setCurrentLang(code || 'kn');
   }, [pathname]);
 
-  // Click-outside handler for language dropdown
+  // Click-outside + Escape handler for language dropdown
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (langDropdownRef.current && !langDropdownRef.current.contains(e.target as Node)) {
         setLangDropdownOpen(false);
       }
     }
-    if (langDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setLangDropdownOpen(false);
     }
-  }, [langDropdownOpen]);
+    if (langDropdownOpen) {
+      // Sync the active option with the currently-selected language each time
+      // the listbox opens so arrow-key navigation starts from the right item.
+      const idx = sidebarLanguages.findIndex(l => l.code === currentLang);
+      setLangActiveIdx(idx >= 0 ? idx : 0);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKey);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKey);
+      };
+    }
+  }, [langDropdownOpen, currentLang]);
 
   const switchLang = (code: string) => {
     setReadingLang(code);
@@ -132,6 +145,16 @@ export function Sidebar() {
         <div className="px-3 mt-2 relative" ref={langDropdownRef}>
           <button
             onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+            aria-label="Reading language"
+            aria-haspopup="listbox"
+            aria-expanded={langDropdownOpen}
+            aria-controls="sidebar-lang-listbox"
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setLangDropdownOpen(true);
+              }
+            }}
             className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-warm-600 dark:text-warm-400 hover:bg-warm-100 dark:hover:bg-warm-800 transition-all w-full"
           >
             <Globe2 className="w-5 h-5 flex-shrink-0" />
@@ -144,22 +167,52 @@ export function Sidebar() {
             <ChevronDown className={cn('w-4 h-4 text-warm-400 transition-transform', langDropdownOpen && 'rotate-180')} />
           </button>
           {langDropdownOpen && (
-            <div className="absolute left-3 right-3 top-full mt-1 bg-white dark:bg-warm-900 rounded-xl border border-warm-200 dark:border-warm-700 shadow-lg py-1 z-50">
-              {sidebarLanguages.map(lang => (
-                <button
+            <ul
+              id="sidebar-lang-listbox"
+              ref={langListboxRef}
+              role="listbox"
+              aria-label="Reading language"
+              tabIndex={-1}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setLangActiveIdx((i) => Math.min(i + 1, sidebarLanguages.length - 1));
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setLangActiveIdx((i) => Math.max(i - 1, 0));
+                } else if (e.key === 'Home') {
+                  e.preventDefault();
+                  setLangActiveIdx(0);
+                } else if (e.key === 'End') {
+                  e.preventDefault();
+                  setLangActiveIdx(sidebarLanguages.length - 1);
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  switchLang(sidebarLanguages[langActiveIdx].code);
+                }
+              }}
+              className="absolute left-3 right-3 top-full mt-1 bg-white dark:bg-warm-900 rounded-xl border border-warm-200 dark:border-warm-700 shadow-lg py-1 z-50 outline-none"
+            >
+              {sidebarLanguages.map((lang, idx) => (
+                <li
                   key={lang.code}
+                  role="option"
+                  aria-selected={currentLang === lang.code}
+                  onMouseEnter={() => setLangActiveIdx(idx)}
                   onClick={() => switchLang(lang.code)}
                   className={cn(
-                    'w-full text-left px-4 py-2.5 text-sm transition-colors',
+                    'w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer',
                     currentLang === lang.code
                       ? 'bg-primary/10 text-primary font-semibold'
-                      : 'text-warm-700 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-800'
+                      : 'text-warm-700 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-800',
+                    idx === langActiveIdx && currentLang !== lang.code && 'bg-warm-50 dark:bg-warm-800'
                   )}
                 >
                   {lang.name}
-                </button>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 

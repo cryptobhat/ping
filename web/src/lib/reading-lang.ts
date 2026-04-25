@@ -1,5 +1,24 @@
 export const READING_LANG_KEY = 'kalaloka_reading_lang';
 
+/** Cookie name read by the server in `RootLayout` to set `<html lang>`. */
+export const READING_LANG_COOKIE = 'reading-lang';
+
+/** Allowed reading-language codes (kept in sync with `LANGUAGES` below). */
+export const ALLOWED_READING_LANGS = [
+  'kn', 'hi', 'en', 'ta', 'te', 'mr', 'bn', 'ml', 'gu', 'pa', 'or', 'as',
+] as const;
+
+export function isValidReadingLang(code: string | null | undefined): boolean {
+  if (!code) return false;
+  return (ALLOWED_READING_LANGS as readonly string[]).includes(code);
+}
+
+function readCookie(name: string): string {
+  if (typeof document === 'undefined') return '';
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 /** Preserved when /login?next=… sends the user to /welcome first (no reading lang yet). */
 export const POST_AUTH_REDIRECT_KEY = 'kalaloka_post_auth_redirect';
 
@@ -54,16 +73,28 @@ export const LANGUAGES = [
 export function getReadingLang(): string {
   if (typeof window === 'undefined') return '';
   try {
-    return localStorage.getItem(READING_LANG_KEY)?.trim() || '';
-  } catch {
-    return '';
-  }
+    const fromLs = localStorage.getItem(READING_LANG_KEY)?.trim() || '';
+    if (fromLs) return fromLs;
+  } catch { /* ignore */ }
+  // Fallback to cookie (kept in sync by setReadingLang) so SSR-set cookie
+  // is visible even when localStorage is empty (private mode / fresh device).
+  try {
+    const fromCookie = readCookie(READING_LANG_COOKIE).trim();
+    if (fromCookie && isValidReadingLang(fromCookie)) return fromCookie;
+  } catch { /* ignore */ }
+  return '';
 }
 
 export function setReadingLang(code: string): void {
   if (typeof window === 'undefined') return;
+  if (!isValidReadingLang(code)) return;
   try {
     localStorage.setItem(READING_LANG_KEY, code);
+  } catch { /* ignore */ }
+  // Also write cookie so server components (RootLayout) can read it
+  // on the next request and emit a correct <html lang>.
+  try {
+    document.cookie = `${READING_LANG_COOKIE}=${code}; path=/; max-age=31536000; samesite=lax`;
   } catch { /* ignore */ }
 }
 

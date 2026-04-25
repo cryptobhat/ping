@@ -605,7 +605,7 @@ export default function HomePage() {
                           {(seriesData.coverImage || s.coverImage) ? (
                             <FallbackImage
                               src={seriesData.coverImage || s.coverImage}
-                              alt=""
+                              alt={(seriesData.title || s.title || 'Series').slice(0, 100)}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
                               fallbackIcon={BookOpen}

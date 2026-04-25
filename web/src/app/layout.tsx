@@ -5,6 +5,7 @@ import './globals.css';
 import { ClientLayout } from './client-layout';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { websiteJsonLd } from '@/lib/seo';
+import { getServerReadingLang } from '@/lib/reading-lang.server';
 
 // Self-hosted by Next.js — eliminates the third-party Google Fonts CSS request,
 // inlines font-face, and uses font-display: swap for fast text paint.
@@ -67,9 +68,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getServerReadingLang();
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
+    <html lang={lang} suppressHydrationWarning className={inter.variable}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />

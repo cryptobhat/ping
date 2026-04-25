@@ -258,6 +258,9 @@ export default function EditProfilePage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+              aria-required="true"
+              aria-invalid={!name.trim() ? undefined : false}
               className="w-full px-4 py-3 rounded-xl border border-warm-200 dark:border-warm-700 bg-white dark:bg-warm-900 text-warm-900 dark:text-warm-100 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
               placeholder="Enter your display name"
             />
@@ -279,6 +282,8 @@ export default function EditProfilePage() {
                 type="text"
                 value={username}
                 onChange={(e) => handleUsernameChange(e.target.value)}
+                aria-invalid={!!usernameError}
+                aria-describedby={usernameError ? 'username-error' : undefined}
                 className={cn(
                   'w-full pl-8 pr-4 py-3 rounded-xl border bg-white dark:bg-warm-900 text-warm-900 dark:text-warm-100 text-sm outline-none focus:ring-2 transition-all',
                   usernameError
@@ -290,7 +295,7 @@ export default function EditProfilePage() {
               />
             </div>
             {usernameError && (
-              <p className="text-xs text-red-500 mt-1">{usernameError}</p>
+              <p id="username-error" className="text-xs text-red-500 mt-1">{usernameError}</p>
             )}
             {!usernameError && username.length >= 3 && (
               <p className="text-xs text-warm-400 mt-1">kalaloka.buzz/user/{username}</p>

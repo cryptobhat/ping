@@ -137,12 +137,18 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <PostHogProvider>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-primary focus:text-white focus:px-3 focus:py-2 focus:rounded"
+      >
+        Skip to content
+      </a>
       {!isNativeApp && <SmartAppBanner />}
       {!isNativeApp && <AdSenseScript />}
       <Toaster position="top-center" toastOptions={{ className: 'text-sm' }} />
       {!isNativeApp && <Sidebar />}
       {!isChatConversation && <TopBar />}
-      <main className={cn(
+      <main id="main-content" className={cn(
         'min-h-screen',
         !isNativeApp && 'lg:ml-[260px]',
         isChatConversation ? 'pb-0' : isNativeApp ? 'pb-16' : 'pb-24 lg:pb-0'

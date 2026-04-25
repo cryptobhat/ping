@@ -178,7 +178,7 @@ export default function SearchPage() {
                           {item.coverImage ? (
                             <FallbackImage
                               src={item.coverImage}
-                              alt=""
+                              alt={(item.title || '').slice(0, 100)}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
                               fallbackIcon={BookOpen}

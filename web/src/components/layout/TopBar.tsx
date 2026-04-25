@@ -4,11 +4,22 @@ import Link from 'next/link';
 import { Bell, MessageCircle, Search, Sparkles, User, Settings, Wallet, LogOut, Star, Trophy } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { Avatar } from '@/components/ui/Avatar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function TopBar() {
   const { user, isAuthenticated } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
+
+  // Close avatar menu on Escape so keyboard users can dismiss without
+  // needing to click the backdrop.
+  useEffect(() => {
+    if (!showMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowMenu(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [showMenu]);
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 dark:bg-warm-950/90 backdrop-blur-xl border-b border-warm-200/50 dark:border-warm-800/50 lg:hidden">
@@ -35,13 +46,19 @@ export function TopBar() {
           </Link>
           {isAuthenticated && user ? (
             <div className="relative ml-1">
-              <button onClick={() => setShowMenu(!showMenu)} className="rounded-full">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="Account menu"
+                aria-haspopup="menu"
+                aria-expanded={showMenu}
+                className="rounded-full"
+              >
                 <Avatar src={user.profileImage} name={user.name} size="xs" />
               </button>
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-56 bg-white dark:bg-warm-900 rounded-2xl shadow-xl border border-warm-100 dark:border-warm-800 py-2 animate-scale-in">
+                  <div role="menu" aria-label="Account menu" className="absolute right-0 top-full mt-2 z-50 w-56 bg-white dark:bg-warm-900 rounded-2xl shadow-xl border border-warm-100 dark:border-warm-800 py-2 animate-scale-in">
                     {/* User info */}
                     <div className="px-4 py-2 border-b border-warm-100 dark:border-warm-800 mb-1">
                       <p className="text-sm font-semibold text-warm-900 dark:text-warm-100 truncate">{user.name}</p>
@@ -58,6 +75,7 @@ export function TopBar() {
                       <Link
                         key={href}
                         href={href}
+                        role="menuitem"
                         onClick={() => setShowMenu(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-warm-700 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-800 transition-colors"
                       >
@@ -67,6 +85,7 @@ export function TopBar() {
                     ))}
                     <div className="h-px bg-warm-100 dark:bg-warm-800 my-1" />
                     <button
+                      role="menuitem"
                       onClick={() => {
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');

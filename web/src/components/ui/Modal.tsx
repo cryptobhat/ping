@@ -4,14 +4,26 @@ import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef } from 'react';
 
-interface ModalProps {
+/**
+ * Either `title` (rendered as a visible heading) OR `ariaLabel` must be
+ * provided so the dialog has an accessible name. Discriminated union enforces
+ * this at the type level for new call sites; legacy callers without either
+ * still type-check via `BaseModalProps` but trigger a dev-time warning.
+ */
+interface BaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
+  title?: string;
+  ariaLabel?: string;
 }
+
+export type ModalProps =
+  | (BaseModalProps & { title: string; ariaLabel?: string })
+  | (BaseModalProps & { title?: undefined; ariaLabel: string })
+  | BaseModalProps; // permissive fallback — see dev warning below
 
 const sizeMap = {
   sm: 'max-w-sm',
@@ -20,7 +32,7 @@ const sizeMap = {
   xl: 'max-w-2xl',
 };
 
-export function Modal({ isOpen, onClose, title, children, size = 'md', className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, ariaLabel, children, size = 'md', className }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -40,6 +52,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', className
 
   useEffect(() => {
     if (isOpen) {
+      // Dev-time guard: every dialog needs an accessible name. Either a visible
+      // `title` (becomes aria-labelledby) or an explicit `ariaLabel` is required.
+      if (process.env.NODE_ENV !== 'production' && !title && !ariaLabel) {
+        // eslint-disable-next-line no-console
+        console.warn('[Modal] Missing both `title` and `ariaLabel`. Provide one for screen-reader users.');
+      }
       previousFocusRef.current = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', trapFocus);
@@ -66,6 +84,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', className
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
+        aria-label={!title ? ariaLabel : undefined}
         tabIndex={-1}
         className={cn(
           'relative w-full bg-white dark:bg-warm-900 rounded-2xl shadow-2xl animate-scale-in outline-none',
