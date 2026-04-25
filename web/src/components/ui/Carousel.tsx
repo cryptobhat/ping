@@ -90,10 +90,9 @@ export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, 
         </>
       )}
 
-      {/* Dots */}
+      {/* Dots — backdrop wrapper keeps them visible over light banner imagery
+          without depending on mix-blend-mode (which is unreliable on iOS). */}
       {items.length > 1 && (
-        {/* Backdrop wrapper ensures dots stay visible over light banner imagery
-            without depending on mix-blend-mode (which is unreliable on iOS). */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/30 backdrop-blur px-2 py-1 rounded-full">
           {items.map((_, i) => (
             <button
