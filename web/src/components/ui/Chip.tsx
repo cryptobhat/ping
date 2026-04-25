@@ -65,7 +65,7 @@ export function Chip({
   ariaLabel,
 }: ChipProps) {
   const classes = cn(
-    'inline-flex items-center font-medium rounded-full whitespace-nowrap transition-all flex-shrink-0',
+    'inline-flex items-center font-medium rounded-full whitespace-nowrap transition-all duration-fast flex-shrink-0',
     sizes[size],
     active ? activeStyles : variants[variant],
     disabled && 'opacity-50 cursor-not-allowed pointer-events-none',

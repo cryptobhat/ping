@@ -15,9 +15,11 @@ const badgeVariants = {
   secondary: 'bg-warm-100 dark:bg-warm-800 text-warm-600 dark:text-warm-300',
   success: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
   warning: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
-  story: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
-  poem: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400',
-  article: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
+  // Content-type badges use bg-50 + text-700 (light) / bg-950/40 + text-300 (dark)
+  // to stay legible without competing with the primary teal CTA color.
+  story: 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300',
+  poem: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300',
+  article: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300',
 };
 
 export function Badge({ children, variant = 'secondary', size = 'sm', className, onClick, 'aria-label': ariaLabel }: BadgeProps & { 'aria-label'?: string }) {

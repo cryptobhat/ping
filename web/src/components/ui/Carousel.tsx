@@ -50,7 +50,7 @@ export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, 
       {/* Slides — aria-live so SR users hear when the slide changes. */}
       <div className="overflow-hidden rounded-2xl" aria-live="polite">
         <div
-          className="flex transition-transform duration-500 ease-out"
+          className="flex transition-transform duration-slow ease-out"
           style={{ transform: `translateX(-${current * 100}%)` }}
         >
           {items.map((item, i) => (
@@ -92,7 +92,9 @@ export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, 
 
       {/* Dots */}
       {items.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {/* Backdrop wrapper ensures dots stay visible over light banner imagery
+            without depending on mix-blend-mode (which is unreliable on iOS). */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/30 backdrop-blur px-2 py-1 rounded-full">
           {items.map((_, i) => (
             <button
               key={i}
@@ -101,8 +103,8 @@ export function Carousel({ items, autoPlay = true, interval = 4000, renderItem, 
               aria-current={i === current ? 'true' : undefined}
               onClick={() => { clearInterval(timerRef.current); setCurrent(i); }}
               className={cn(
-                'h-1.5 rounded-full transition-all duration-300',
-                i === current ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
+                'h-1.5 rounded-full transition-all duration-normal',
+                i === current ? 'w-6 bg-white' : 'w-1.5 bg-white/60'
               )}
             />
           ))}

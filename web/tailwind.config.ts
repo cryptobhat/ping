@@ -21,11 +21,16 @@ const config: Config = {
           800: '#063B35',
           900: '#042621',
         },
+        // accent: warm saffron — used for premium CTAs, gradient accents on
+        // hero text and avatar fallbacks. Pairs with primary teal.
         accent: {
           DEFAULT: '#D4A85A',
           light: '#E8C87A',
           dark: '#A87E2C',
         },
+        // coral: reserved for tertiary highlights / promo banners. Currently
+        // not referenced anywhere in src — keep until product confirms it's
+        // unused, then drop.
         coral: {
           DEFAULT: '#E8704F',
           light: '#F09B82',
@@ -59,6 +64,14 @@ const config: Config = {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
         serif: ['Georgia', 'Cambria', 'serif'],
         display: ['Cabinet Grotesk', 'var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+      },
+      transitionDuration: {
+        fast: 'var(--motion-fast)',
+        normal: 'var(--motion-normal)',
+        slow: 'var(--motion-slow)',
+      },
+      transitionTimingFunction: {
+        motion: 'var(--motion-ease)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',

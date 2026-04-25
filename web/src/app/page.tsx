@@ -197,7 +197,7 @@ export default function HomePage() {
         <div className="px-4 lg:px-6">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Live Now</span>
+            <span className="text-xs font-bold text-red-600 dark:text-red-300 uppercase tracking-wider">Live Now</span>
           </div>
           <HScroll className="gap-5">
             {liveRooms.map((room: any) => (
@@ -702,16 +702,16 @@ export default function HomePage() {
 
       {/* ═══ PREMIUM BANNER ═══ */}
       <div className="px-4 lg:px-6">
-        <div className="rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-yellow-950/20 border border-amber-200/50 dark:border-amber-800/30 p-5 lg:p-8">
+        <div className="rounded-2xl bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200/50 dark:border-amber-800/30 p-5 lg:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
               <Crown className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-warm-900 dark:text-warm-100 text-lg">{cx('premiumTitle', 'Go premium')}</h3>
               <p className="text-sm text-warm-500 mt-0.5">{cx('premiumSubtitle', 'Ad-light reading and more perks for serious readers')}</p>
             </div>
-            <Link href="/subscription" className="w-full sm:w-auto text-center px-5 py-3 min-h-[44px] inline-flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all whitespace-nowrap">
+            <Link href="/subscription" className="w-full sm:w-auto text-center px-5 py-3 min-h-[44px] inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all whitespace-nowrap">
               {cx('premiumCta', 'View plans')}
             </Link>
           </div>

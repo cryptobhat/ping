@@ -20,16 +20,14 @@ const sizes = {
   '2xl': 'w-32 h-32 text-3xl',
 };
 
-// Deterministic gradient based on name — each user gets a consistent color
+// Deterministic gradient based on name — each user gets a consistent color.
+// Reduced from 8 saturated combos to 4 muted brand-aligned gradients so
+// avatars don't compete with primary teal across feed surfaces.
 const gradients = [
-  'from-rose-400 to-pink-500',
-  'from-violet-400 to-purple-500',
-  'from-blue-400 to-indigo-500',
-  'from-emerald-400 to-teal-500',
-  'from-amber-400 to-orange-500',
-  'from-cyan-400 to-blue-500',
-  'from-fuchsia-400 to-pink-500',
-  'from-teal-400 to-emerald-500',
+  'from-primary/40 to-accent/40',     // brand teal/saffron
+  'from-warm-300 to-warm-500',         // neutral
+  'from-amber-300 to-orange-400',      // warm sunset
+  'from-emerald-300 to-teal-400',      // cool green
 ];
 
 function nameToGradient(name: string): string {

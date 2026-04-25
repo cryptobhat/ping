@@ -4,11 +4,34 @@
 
 /* Inter font is now loaded via next/font/google in app/layout.tsx (--font-inter). */
 
+:root {
+  /* Brand OAuth colors — kept as CSS vars so any future audit / theming pass
+     finds them in one place instead of grepping inline hex. */
+  --brand-facebook: #1877F2;
+  --brand-facebook-hover: #166FE5;
+
+  /* Motion tokens — use via Tailwind: duration-fast/normal/slow.
+     Keep existing duration-200/300/500 usages as-is; migrate high-visibility
+     surfaces (Modal, Carousel, Tabs) over time. */
+  --motion-fast: 150ms;
+  --motion-normal: 250ms;
+  --motion-slow: 400ms;
+  --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Firefox scrollbar styling — webkit equivalents below */
+    scrollbar-color: #D6D3CD transparent;
+    scrollbar-width: thin;
+  }
+
+  .dark html,
+  html.dark {
+    scrollbar-color: #44403C transparent;
   }
 
   body {

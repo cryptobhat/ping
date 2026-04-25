@@ -473,7 +473,7 @@ function LoginForm() {
                   window.location.href = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${redirect}&scope=email,public_profile&response_type=token`;
                 }}
                 className={cn(
-                  'w-full flex items-center justify-center gap-3 px-4 py-3 border border-warm-200 dark:border-warm-700 rounded-xl bg-[#1877F2] text-white text-sm font-medium hover:bg-[#166FE5] transition-all',
+                  'w-full flex items-center justify-center gap-3 px-4 py-3 border border-warm-200 dark:border-warm-700 rounded-xl bg-[var(--brand-facebook)] text-white text-sm font-medium hover:bg-[var(--brand-facebook-hover)] transition-all',
                   facebookLoading && 'opacity-70 cursor-wait'
                 )}
               >

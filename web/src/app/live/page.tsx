@@ -166,7 +166,7 @@ export default function LiveRoomsPage() {
                       </h3>
                       <p className="text-sm text-warm-500 mt-0.5">{room.hostName}</p>
                     </div>
-                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-medium flex-shrink-0">
+                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-300 text-xs font-medium flex-shrink-0">
                       <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                       LIVE
                     </div>

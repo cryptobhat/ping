@@ -91,7 +91,7 @@ export function Tabs({
             onClick={() => onChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
             className={cn(
-              'flex items-center gap-1.5 whitespace-nowrap font-medium transition-all flex-shrink-0 min-h-[44px]',
+              'flex items-center gap-1.5 whitespace-nowrap font-medium transition-all duration-fast flex-shrink-0 min-h-[44px]',
               isPill
                 ? cn(
                     'px-4 py-2.5 rounded-xl text-sm',
