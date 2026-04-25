@@ -8,6 +8,13 @@ const nextConfig = {
   experimental: {
     instrumentationHook: true,
   },
+  // Tree-shake lucide-react: rewrite barrel imports to direct ESM icon paths.
+  // Cuts ~hundreds of KB from client bundles that touch many icons.
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'api.kalaloka.buzz' },

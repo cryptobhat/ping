@@ -1,8 +1,19 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { ClientLayout } from './client-layout';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { websiteJsonLd } from '@/lib/seo';
+
+// Self-hosted by Next.js — eliminates the third-party Google Fonts CSS request,
+// inlines font-face, and uses font-display: swap for fast text paint.
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kalaloka.buzz';
 
@@ -58,7 +69,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
@@ -68,20 +79,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="Kalaloka" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <JsonLd data={websiteJsonLd()} />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function() {});
-                });
-              }
-            `,
-          }}
-        />
       </head>
       <body className="font-sans antialiased overflow-x-hidden">
         <ClientLayout>{children}</ClientLayout>
+        {/* Service-worker registration: afterInteractive so it does not block FCP/LCP. */}
+        <Script id="sw-register" strategy="afterInteractive">
+          {`if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function() {});
+              });
+            }`}
+        </Script>
       </body>
     </html>
   );

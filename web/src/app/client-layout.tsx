@@ -94,14 +94,35 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated) return;
 
     requestNotificationPermission();
-    // Initial check
-    checkUnreadNotifications();
 
-    // Poll every 60 seconds
-    notifIntervalRef.current = setInterval(checkUnreadNotifications, 60000);
+    // Only poll while the tab is visible. Background tabs aggressively throttle
+    // setInterval anyway, but explicitly stopping avoids needless network/CPU
+    // and battery drain on mobile.
+    const startPolling = () => {
+      if (notifIntervalRef.current) return;
+      checkUnreadNotifications();
+      notifIntervalRef.current = setInterval(checkUnreadNotifications, 60000);
+    };
+    const stopPolling = () => {
+      if (notifIntervalRef.current) {
+        clearInterval(notifIntervalRef.current);
+        notifIntervalRef.current = null;
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') startPolling();
+      else stopPolling();
+    };
+
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      startPolling();
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
-      if (notifIntervalRef.current) clearInterval(notifIntervalRef.current);
+      stopPolling();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [isAuthenticated, requestNotificationPermission, checkUnreadNotifications]);
 

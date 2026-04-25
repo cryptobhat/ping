@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { getReadingLang } from '@/lib/reading-lang';
 import { fetchSiteCopy } from '@/lib/site-copy';
 import { stripHtml } from '@/lib/html-utils';
+import Image from 'next/image';
 import { FallbackImage } from '@/components/ui/FallbackImage';
 
 export default function HomePage() {
@@ -226,11 +227,19 @@ export default function HomePage() {
             items={banners}
             autoPlay
             interval={5000}
-            renderItem={(banner: any) => (
+            renderItem={(banner: any, index: number) => (
               <Link href={banner.deepLink || banner.link || '/discover'}>
                 <div className="relative overflow-hidden rounded-2xl aspect-[21/9] lg:aspect-[3/1] bg-gradient-to-br from-primary/10 to-accent/10">
                   {banner.imageUrl ? (
-                    <img src={banner.imageUrl} alt={banner.title || ''} className="w-full h-full object-cover" />
+                    // First banner is above-the-fold on home — mark as priority for LCP.
+                    <Image
+                      src={banner.imageUrl}
+                      alt={banner.title || ''}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 1024px"
+                      priority={index === 0}
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full p-6">
                       <div>

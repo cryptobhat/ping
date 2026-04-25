@@ -5,24 +5,63 @@ import { X, Crown, Check, Zap, Shield, BookOpen, Star, Gift } from 'lucide-react
 import { useAuthStore } from '@/store/auth';
 import Link from 'next/link';
 
+const BOT_UA_RE = /Googlebot|bingbot|YandexBot|Baiduspider|DuckDuckBot|Slurp/i;
+
 export function SubscriptionModal() {
   const [show, setShow] = useState(false);
   const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    // Show for ALL users (even non-authenticated) — skip only for premium
+    // Skip modal entirely for premium users
     if (user?.isPremium) return;
 
-    // Dismissed in last 24 hours? Skip
+    // Skip for SEO crawlers — they shouldn't see a popup blocking the LCP/CLS
+    if (typeof navigator !== 'undefined' && BOT_UA_RE.test(navigator.userAgent || '')) {
+      return;
+    }
+
+    // Respect 24h dismissal cooldown
     const dismissed = localStorage.getItem('sub_modal_dismissed');
     if (dismissed) {
       const dismissedAt = parseInt(dismissed, 10);
       if (Date.now() - dismissedAt < 24 * 60 * 60 * 1000) return;
     }
 
-    // Show immediately (500ms for page to settle)
-    const timer = setTimeout(() => setShow(true), 500);
-    return () => clearTimeout(timer);
+    // Defer until the browser is idle OR the user interacts — avoids
+    // competing with first paint and TTI. Whichever fires first wins.
+    let fired = false;
+    const fire = () => {
+      if (fired) return;
+      fired = true;
+      setShow(true);
+      cleanup();
+    };
+
+    const onInteraction = () => fire();
+    const cleanup = () => {
+      window.removeEventListener('scroll', onInteraction);
+      window.removeEventListener('click', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+      if (idleHandle != null) {
+        const w = window as any;
+        if (typeof w.cancelIdleCallback === 'function') w.cancelIdleCallback(idleHandle);
+        else clearTimeout(idleHandle);
+      }
+    };
+
+    window.addEventListener('scroll', onInteraction, { passive: true, once: true });
+    window.addEventListener('click', onInteraction, { once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+
+    const w = window as any;
+    let idleHandle: any = null;
+    if (typeof w.requestIdleCallback === 'function') {
+      idleHandle = w.requestIdleCallback(fire, { timeout: 4000 });
+    } else {
+      idleHandle = setTimeout(fire, 2500);
+    }
+
+    return cleanup;
   }, [user?.isPremium]);
 
   const dismiss = () => {

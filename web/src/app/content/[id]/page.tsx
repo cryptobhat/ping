@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn, formatDate, formatNumber, readingTime, getContentTypeEmoji } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { FallbackImage } from '@/components/ui/FallbackImage';
 import { ShareButtons } from '@/components/share/ShareButtons';
@@ -545,14 +546,16 @@ export default function ContentPage() {
             {/* Main reading column */}
             <div className="max-w-2xl mx-auto px-4 lg:px-0 lg:mx-0 lg:flex-1 lg:max-w-3xl py-8 pb-28 lg:pb-8">
               {content.coverImage && (
-                <div className="rounded-2xl overflow-hidden mb-8 aspect-[2/1] bg-warm-100 dark:bg-warm-800">
+                <div className="rounded-2xl overflow-hidden mb-8 aspect-[2/1] bg-warm-100 dark:bg-warm-800 relative">
                   <FallbackImage
                     src={content.coverImage}
                     alt={content.title}
-                    className="w-full h-full object-cover"
+                    className="object-cover"
                     fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
                     fallbackIcon={BookOpen}
                     fallbackIconClassName="w-12 h-12 text-warm-300 dark:text-warm-500"
+                    priority
+                    sizes="(max-width: 768px) 100vw, 720px"
                   />
                 </div>
               )}
@@ -1153,7 +1156,7 @@ export default function ContentPage() {
                               {gift.iconEmoji ? (
                                 <span className="text-2xl">{gift.iconEmoji}</span>
                               ) : gift.imageUrl ? (
-                                <img src={gift.imageUrl} alt="" className="w-8 h-8 object-contain" loading="lazy" />
+                                <Image src={gift.imageUrl} alt="" width={32} height={32} className="w-8 h-8 object-contain" />
                               ) : (
                                 <Gem className="w-6 h-6 text-amber-500" />
                               )}

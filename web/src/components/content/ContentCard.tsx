@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Heart, MessageCircle, Bookmark, Share2, Eye, Star, Lock, BookOpen, Feather, FileText, Flag } from 'lucide-react';
 import { cn, formatDate, formatNumber, readingTime, getContentTypeEmoji } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
@@ -98,11 +99,12 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
           </div>
           <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative bg-warm-100 dark:bg-warm-800">
             {content.coverImage && !imgError ? (
-              <img
+              <Image
                 src={content.coverImage}
                 alt=""
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                fill
+                sizes="96px"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={() => setImgError(true)}
               />
             ) : (
@@ -126,13 +128,14 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
       <>
         <Link href={`/content/${content.id}`} className="group block">
           <div className="bg-white dark:bg-warm-900 rounded-2xl overflow-hidden border border-warm-100 dark:border-warm-800 hover-lift relative">
-            <div className="aspect-[2/1] overflow-hidden bg-warm-100 dark:bg-warm-800">
+            <div className="aspect-[2/1] overflow-hidden bg-warm-100 dark:bg-warm-800 relative">
               {content.coverImage && !imgError ? (
-                <img
+                <Image
                   src={content.coverImage}
                   alt=""
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                   onError={() => setImgError(true)}
                 />
               ) : (
@@ -218,13 +221,14 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
           <p className="text-sm text-warm-600 dark:text-warm-400 line-clamp-3 leading-relaxed">{content.excerpt || (content.body ? stripHtml(content.body).slice(0, 200) : '')}</p>
         </div>
         {content.coverImage && (
-          <div className="mx-5 mt-2 rounded-xl overflow-hidden aspect-[2/1] bg-warm-100 dark:bg-warm-800">
+          <div className="mx-5 mt-2 rounded-xl overflow-hidden aspect-[2/1] bg-warm-100 dark:bg-warm-800 relative">
             {!coverImgError ? (
-              <img
+              <Image
                 src={content.coverImage}
                 alt=""
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                fill
+                sizes="(max-width: 768px) 100vw, 720px"
+                className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
                 onError={() => setCoverImgError(true)}
               />
             ) : (

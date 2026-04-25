@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn, formatNumber } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Star, Eye, Heart, BookOpen } from 'lucide-react';
@@ -27,11 +28,12 @@ export function BookCard({ item, type = 'content', size = 'md', rank }: BookCard
     <Link href={href} className="group block flex-shrink-0" style={{ width: size === 'sm' ? 140 : 156 }}>
       <div className="relative overflow-hidden rounded-xl bg-warm-100 dark:bg-warm-800 aspect-[3/4] mb-2.5 shadow-sm group-hover:shadow-md transition-all duration-300">
         {showCover ? (
-          <img
+          <Image
             src={cover}
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
+            fill
+            sizes={size === 'sm' ? '140px' : '156px'}
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
             onError={() => setImgError(true)}
           />
         ) : (
