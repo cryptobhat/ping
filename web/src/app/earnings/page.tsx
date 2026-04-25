@@ -190,8 +190,8 @@ export default function EarningsPage() {
           ) : (
             <EmptyState
               icon={BarChart3}
-              title="Detailed analytics coming soon"
-              description="Per-content earnings breakdown will be available here. Check the Rewards page for your current points and ad share."
+              title="Analytics coming soon"
+              description="Per-content earnings breakdown will land here. Visit Rewards for current points."
             />
           )}
         </div>

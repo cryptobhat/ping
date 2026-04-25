@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, MessageCircle, Bookmark, Share2, Eye, Star, Lock, BookOpen, Feather, FileText, Flag } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, Eye, Star, Lock, BookOpen, Feather, FileText, Flag, MoreVertical, Copy, EyeOff } from 'lucide-react';
 import { cn, formatDate, formatNumber, readingTime, getContentTypeEmoji } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { contentApi, bookmarkApi } from '@/lib/api';
 import { ReportContentModal } from '@/components/moderation/ReportContentModal';
 import { stripHtml } from '@/lib/html-utils';
@@ -24,6 +24,32 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
   const [reportOpen, setReportOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [coverImgError, setCoverImgError] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close kebab menu on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      navigator.clipboard.writeText(`${window.location.origin}/content/${content.id}`);
+    } catch {}
+    setMenuOpen(false);
+  };
 
   const ContentTypeIcon = content.contentType === 'POEM' ? Feather : content.contentType === 'ARTICLE' ? FileText : BookOpen;
 
@@ -211,6 +237,48 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
               <Lock className="w-3 h-3 text-white" />
             </div>
           )}
+          {/* Kebab menu — moderation + utility actions, kept off the primary
+              action row so they don't compete with like/comment/bookmark. */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen((p) => !p); }}
+              aria-label="More options"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              className="flex items-center justify-center w-8 h-8 rounded-full text-warm-400 hover:text-warm-700 dark:hover:text-warm-200 hover:bg-warm-100 dark:hover:bg-warm-800 transition-colors"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-9 z-20 w-48 rounded-xl bg-white dark:bg-warm-900 border border-warm-100 dark:border-warm-800 shadow-lg py-1 animate-scale-in origin-top-right"
+              >
+                <button
+                  role="menuitem"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); setReportOpen(true); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-700 dark:text-warm-200 hover:bg-warm-50 dark:hover:bg-warm-800/60 text-left"
+                >
+                  <Flag className="w-3.5 h-3.5" /> Report content
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-700 dark:text-warm-200 hover:bg-warm-50 dark:hover:bg-warm-800/60 text-left"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy link
+                </button>
+                {/* TODO: implement hide-author once the moderation API exposes it. */}
+                <button
+                  role="menuitem"
+                  disabled
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-400 dark:text-warm-600 cursor-not-allowed text-left"
+                >
+                  <EyeOff className="w-3.5 h-3.5" /> Hide author (soon)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -253,13 +321,8 @@ export function ContentCard({ content, variant = 'feed', rank }: ContentCardProp
           </Link>
         </div>
         <div className="flex items-center gap-0.5">
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setReportOpen(true); }}
-            aria-label="Report content"
-            className="flex items-center justify-center w-11 h-11 rounded-lg text-warm-300 dark:text-warm-600 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-          >
-            <Flag className="w-3.5 h-3.5" />
-          </button>
+          {/* Report moved into the kebab menu in the header — keep the action
+              row focused on primary actions (bookmark, share). */}
           <button onClick={handleBookmark} aria-pressed={bookmarked} aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'} className={cn('flex items-center justify-center w-11 h-11 rounded-lg transition-all', bookmarked ? 'text-primary bg-primary/5' : 'text-warm-400 hover:bg-warm-50 dark:hover:bg-warm-800')}>
             <Bookmark className={cn('w-4 h-4', bookmarked && 'fill-primary')} />
           </button>

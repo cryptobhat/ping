@@ -106,7 +106,7 @@ function LeaderboardRow({
           <div className="flex items-center gap-1.5">
             <p className="text-xs text-warm-500 truncate">@{user.username}</p>
             {stats.joinedDaysAgo && stats.joinedDaysAgo <= 30 && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 uppercase">New</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 uppercase">New</span>
             )}
           </div>
         </div>

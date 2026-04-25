@@ -6,7 +6,15 @@ import { ButtonHTMLAttributes, forwardRef } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  /**
+   * Button size. Touch-target guidance:
+   * - `xs` (32px) — dense desktop UI only (badge actions, kebab menus). Do NOT
+   *   use for primary touch targets; below WCAG-comfortable 40px minimum.
+   * - `sm` (40px) — compact actions on mobile/desktop, comfortable touch target.
+   * - `md` (44px) — default; meets Apple HIG / WCAG 2.5.5 touch target.
+   * - `lg` (48px) — primary CTAs, form submits.
+   */
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: React.ReactNode;
 }
@@ -20,7 +28,8 @@ const variants = {
 };
 
 const sizeStyles = {
-  sm: 'px-3 py-1.5 text-xs rounded-lg gap-1.5 min-h-[36px]',
+  xs: 'px-2.5 py-1 text-xs rounded-lg gap-1 min-h-[32px]',
+  sm: 'px-3.5 py-2 text-sm rounded-lg gap-1.5 min-h-[40px]',
   md: 'px-4 py-2.5 text-sm rounded-xl gap-2 min-h-[44px]',
   lg: 'px-6 py-3 text-base rounded-xl gap-2 min-h-[48px]',
 };

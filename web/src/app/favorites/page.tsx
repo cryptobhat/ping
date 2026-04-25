@@ -159,7 +159,7 @@ export default function FavoritesPage() {
           <EmptyState
             icon={Heart}
             title="No favorites yet"
-            description="Tap the heart icon on any story, poem, or article to save it here"
+            description="Tap the heart on any story to save it here."
             actionLabel="Discover Content"
             onAction={() => window.location.href = '/discover'}
           />

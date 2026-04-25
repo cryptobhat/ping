@@ -14,7 +14,10 @@ import { Avatar } from '@/components/ui/Avatar';
 import {
   TrendingUp, Flame, BookOpen, Feather, FileText, Crown, PenTool,
   Hash, Star, Eye, Heart, Zap, Clock, Award, Users, Trophy, Medal,
+  Ghost, Smile, Search, Sparkles, Compass, Drama, Atom, Baby,
+  Mountain, Sprout, Sun, Plane, UtensilsCrossed, Handshake, Library,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn, formatNumber, formatDate, readingTime } from '@/lib/utils';
 import Link from 'next/link';
 import { getReadingLang } from '@/lib/reading-lang';
@@ -128,6 +131,35 @@ export default function HomePage() {
       }, [])
       .slice(0, 12);
 
+  // Category icon resolver — returns a lucide icon component for visual
+  // surfaces (chips, tile fallback). For dense text feeds where icon space is
+  // tight, use `getCategoryEmoji` instead to keep the inline emoji glyph.
+  const getCategoryIcon = (name: string): LucideIcon => {
+    const n = name.toLowerCase();
+    if (n.includes('love') || n.includes('romance') || n.includes('ಪ್ರೇಮ') || n.includes('प्रेम')) return Heart;
+    if (n.includes('horror') || n.includes('ಭಯ') || n.includes('भय')) return Ghost;
+    if (n.includes('comedy') || n.includes('humor') || n.includes('ಹಾಸ್ಯ') || n.includes('हास्य')) return Smile;
+    if (n.includes('drama') || n.includes('ನಾಟಕ') || n.includes('नाटक')) return Drama;
+    if (n.includes('thriller') || n.includes('mystery') || n.includes('ರಹಸ್ಯ')) return Search;
+    if (n.includes('fantasy') || n.includes('ಕಲ್ಪನೆ')) return Sparkles;
+    if (n.includes('sci') || n.includes('fiction') || n.includes('ವಿಜ್ಞಾನ')) return Atom;
+    if (n.includes('history') || n.includes('ಇತಿಹಾಸ') || n.includes('इतिहास')) return Library;
+    if (n.includes('spiritual') || n.includes('ಆಧ್ಯಾತ್ಮ') || n.includes('आध्यात्म')) return Mountain;
+    if (n.includes('nature') || n.includes('ಪ್ರಕೃತಿ') || n.includes('प्रकृति')) return Sprout;
+    if (n.includes('life') || n.includes('ಜೀವನ') || n.includes('जीवन')) return Sun;
+    if (n.includes('motivat') || n.includes('inspir') || n.includes('ಪ್ರೇರಣ')) return Zap;
+    if (n.includes('child') || n.includes('kid') || n.includes('ಮಕ್ಕಳ') || n.includes('बच्च')) return Baby;
+    if (n.includes('travel') || n.includes('ಪ್ರವಾಸ') || n.includes('यात्रा')) return Plane;
+    if (n.includes('food') || n.includes('ಆಹಾರ') || n.includes('खाना')) return UtensilsCrossed;
+    if (n.includes('social') || n.includes('ಸಾಮಾಜಿಕ') || n.includes('सामाजिक')) return Handshake;
+    if (n.includes('poem') || n.includes('poetry') || n.includes('ಕವಿತೆ') || n.includes('कविता')) return Feather;
+    if (n.includes('story') || n.includes('ಕಥೆ') || n.includes('कहानी')) return BookOpen;
+    return BookOpen;
+  };
+
+  // Fallback emoji map — used only in dense text-only contexts where rendering
+  // a sized SVG icon would be visually heavier than an inline glyph. Kept in
+  // sync with `getCategoryIcon` above.
   const getCategoryEmoji = (name: string): string => {
     const n = name.toLowerCase();
     if (n.includes('love') || n.includes('romance') || n.includes('ಪ್ರೇಮ') || n.includes('प्रेम')) return '💕';
@@ -209,13 +241,13 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-red-500 rounded-full">
-                    <span className="text-[9px] font-bold text-white uppercase">Live</span>
+                    <span className="text-[10px] font-bold text-white uppercase">Live</span>
                   </div>
                 </div>
                 <span className="text-[11px] text-warm-600 dark:text-warm-400 text-center w-16 truncate group-hover:text-primary transition-colors">
                   {room.hostName?.split(' ')[0]}
                 </span>
-                <span className="text-[9px] text-warm-400 flex items-center gap-0.5">
+                <span className="text-[10px] text-warm-400 flex items-center gap-0.5">
                   <Users className="w-2.5 h-2.5" /> {room.listenerCount || 0}
                 </span>
               </Link>
@@ -339,11 +371,14 @@ export default function HomePage() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     </>
-                  ) : (
-                    <div className="w-full h-full bg-warm-100 dark:bg-warm-800 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                      <span className="text-3xl">{getCategoryEmoji(cat.name)}</span>
-                    </div>
-                  )}
+                  ) : (() => {
+                    const CatIcon = getCategoryIcon(cat.name);
+                    return (
+                      <div className="w-full h-full bg-warm-100 dark:bg-warm-800 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                        <CatIcon className="w-8 h-8 text-warm-500 dark:text-warm-400" />
+                      </div>
+                    );
+                  })()}
                   <div className="absolute inset-0 flex items-end p-3">
                     <span className="text-white font-bold text-sm drop-shadow-lg">{cat.name}</span>
                   </div>
@@ -376,48 +411,20 @@ export default function HomePage() {
       </div>
       )}
 
-      {/* ═══ TOP WRITERS LEADERBOARD (mini — horizontal scroll on mobile) ═══ */}
+      {/* ═══ TOP WRITERS LEADERBOARD ═══ */}
+      {/* Single vertical-list card style on both mobile and desktop. Sizing
+          tweaks (gap, padding) handle the breakpoint difference — eliminates
+          the duplicate mobile/desktop JSX. */}
       {topWriters.length > 0 && (
       <div className="px-4 lg:px-6">
         <SectionHeader title={cx('leaderboardTitle', 'Top Writers')} subtitle="This month's best" href="/leaderboard" actionLabel="View Full Leaderboard" />
-        {/* Mobile: horizontal scroll cards */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 lg:hidden">
-          {topWriters.map((entry: any) => {
-            const { rank, user: w, stats } = entry;
-            return (
-              <Link key={w.id} href={`/user/${w.username}`} className="group flex-shrink-0 w-[140px]">
-                <div className="bg-white dark:bg-warm-900 rounded-2xl border border-warm-100 dark:border-warm-800 p-3 text-center hover:border-primary/20 transition-all">
-                  <div className="relative w-fit mx-auto mb-2">
-                    <Avatar src={w.profileImage} name={w.name} size="md" />
-                    {rank <= 3 && (
-                      <div className={cn(
-                        'absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold shadow',
-                        rank === 1 && 'bg-gradient-to-br from-amber-300 to-yellow-500',
-                        rank === 2 && 'bg-gradient-to-br from-gray-300 to-gray-400',
-                        rank === 3 && 'bg-gradient-to-br from-amber-600 to-orange-700'
-                      )}>
-                        {rank === 1 ? <Crown className="w-2.5 h-2.5" /> : <Medal className="w-2.5 h-2.5" />}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs font-semibold text-warm-800 dark:text-warm-200 truncate group-hover:text-primary transition-colors">{w.name}</p>
-                  <div className="flex items-center justify-center gap-1 mt-1 text-[10px] text-warm-400">
-                    <Eye className="w-2.5 h-2.5" />
-                    <span>{formatNumber(stats.views)}</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-        {/* Desktop: vertical list */}
-        <div className="hidden lg:block bg-white dark:bg-warm-900 rounded-2xl border border-warm-100 dark:border-warm-800 overflow-hidden">
+        <div className="bg-white dark:bg-warm-900 rounded-2xl border border-warm-100 dark:border-warm-800 overflow-hidden">
           {topWriters.map((entry: any, i: number) => {
             const { rank, user: w, stats } = entry;
             return (
               <Link key={w.id} href={`/user/${w.username}`} className="group">
                 <div className={cn(
-                  'flex items-center gap-3 px-4 py-3 transition-all hover:bg-warm-50 dark:hover:bg-warm-800/50',
+                  'flex items-center gap-3 px-3 py-2.5 lg:px-4 lg:py-3 transition-all hover:bg-warm-50 dark:hover:bg-warm-800/50',
                   i !== topWriters.length - 1 && 'border-b border-warm-50 dark:border-warm-800'
                 )}>
                   {rank === 1 ? (
@@ -447,7 +454,7 @@ export default function HomePage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-[10px] text-warm-400">@{w.username}</p>
+                    <p className="text-[10px] text-warm-400 truncate">@{w.username}</p>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-warm-500 flex-shrink-0">
                     <Eye className="w-3 h-3" />
@@ -620,7 +627,7 @@ export default function HomePage() {
                               <BookOpen className="w-8 h-8 text-warm-300" />
                             </div>
                           )}
-                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-primary text-white text-[9px] font-bold uppercase">
+                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-primary text-white text-[10px] font-bold uppercase">
                             New Episode
                           </div>
                         </div>

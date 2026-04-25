@@ -108,7 +108,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Content Container - centered and max-width */}
-      <div className="max-w-5xl mx-auto px-4 lg:px-8">
+      <div className="max-w-5xl mx-auto px-4 lg:px-6">
         {/* Profile Header */}
         <div className="-mt-10 sm:-mt-14 lg:-mt-20 relative z-10">
           {/* Avatar + identity row — stacks on mobile, side-by-side on md+ */}

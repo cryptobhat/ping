@@ -84,19 +84,8 @@
     display: none;
   }
 
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  /* line-clamp-N utilities provided by Tailwind 3.4 core (1-6). Removed
+     custom @layer overrides to avoid duplicating built-in utilities. */
 }
 
 /* Native app (Capacitor WebView) overrides */

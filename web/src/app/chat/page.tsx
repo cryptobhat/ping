@@ -464,8 +464,8 @@ export default function ChatPage() {
                 </button>
               </div>
               <p className="text-[10px] text-warm-400 text-center mt-2 hidden sm:block">
-                Press <kbd className="px-1 py-0.5 rounded bg-warm-100 dark:bg-warm-800 text-[9px]">Enter</kbd> to send ·{' '}
-                <kbd className="px-1 py-0.5 rounded bg-warm-100 dark:bg-warm-800 text-[9px]">Shift+Enter</kbd> for new line
+                Press <kbd className="px-1 py-0.5 rounded bg-warm-100 dark:bg-warm-800 text-[10px]">Enter</kbd> to send ·{' '}
+                <kbd className="px-1 py-0.5 rounded bg-warm-100 dark:bg-warm-800 text-[10px]">Shift+Enter</kbd> for new line
               </p>
             </footer>
           </>

@@ -2,7 +2,7 @@ import { Skeleton, ContentCardSkeleton } from '@/components/ui/Skeleton';
 
 export default function Loading() {
   return (
-    <div className="py-4 lg:py-6 px-4 lg:px-8 space-y-6 pb-28 lg:pb-6">
+    <div className="py-4 lg:py-6 px-4 lg:px-6 space-y-6 pb-28 lg:pb-6">
       {/* Title */}
       <Skeleton className="h-8 w-48 rounded-lg" />
       {/* Pill row */}

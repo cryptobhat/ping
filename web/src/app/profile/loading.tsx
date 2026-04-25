@@ -5,7 +5,7 @@ export default function Loading() {
     <div className="pb-8">
       {/* Cover */}
       <Skeleton className="h-32 sm:h-44 lg:h-56 xl:h-64 rounded-none" />
-      <div className="max-w-5xl mx-auto px-4 lg:px-8">
+      <div className="max-w-5xl mx-auto px-4 lg:px-6">
         {/* Avatar + name */}
         <div className="-mt-12 sm:-mt-16 flex flex-col sm:flex-row sm:items-end gap-4 mb-6">
           <Skeleton className="w-20 h-20 sm:w-28 sm:h-28 rounded-full" />

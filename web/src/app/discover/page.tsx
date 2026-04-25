@@ -163,7 +163,7 @@ function DiscoverContent() {
     const display = seriesBrowse;
     if (loading) {
       return (
-        <div className="py-4 lg:py-6 px-4 lg:px-8 space-y-6">
+        <div className="py-4 lg:py-6 px-4 lg:px-6 space-y-6">
           <div className="skeleton h-8 w-48 rounded-lg" />
           <div className="flex flex-wrap gap-4">
             {[...Array(8)].map((_, i) => (
@@ -203,23 +203,23 @@ function DiscoverContent() {
     return (
       <div className="py-4 lg:py-6 space-y-8">
         {/* Search skeleton */}
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <div className="skeleton h-12 rounded-2xl max-w-2xl mx-auto" />
         </div>
         {/* Categories skeleton */}
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <div className="skeleton h-6 w-40 rounded mb-4" />
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[...Array(5)].map((_, i) => <div key={i} className="skeleton aspect-[3/2] rounded-xl" />)}
           </div>
         </div>
         {/* Series skeleton */}
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <div className="skeleton h-6 w-40 rounded mb-4" />
           <div className="flex gap-4 overflow-hidden">{[...Array(6)].map((_, i) => <BookCardSkeleton key={i} />)}</div>
         </div>
         {/* Content skeleton */}
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <div className="skeleton h-6 w-40 rounded mb-4" />
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {[...Array(6)].map((_, i) => <ContentCardSkeleton key={i} />)}
@@ -233,7 +233,7 @@ function DiscoverContent() {
     <div className="py-4 lg:py-6 space-y-8 lg:space-y-10 pb-28 lg:pb-6">
 
       {/* ═══ HEADER + SEARCH ═══ */}
-      <div className="px-4 lg:px-8">
+      <div className="px-4 lg:px-6">
         <div className="max-w-2xl mx-auto text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Compass className="w-6 h-6 text-primary" />
@@ -272,7 +272,7 @@ function DiscoverContent() {
           'from-pink-500 to-fuchsia-600',
         ];
         return (
-          <div className="px-4 lg:px-8">
+          <div className="px-4 lg:px-6">
             <SectionHeader title="Explore Categories" subtitle="Find your favorite genre" href="/categories" />
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {allCategories.slice(0, 10).map((cat: any, i: number) => (
@@ -309,7 +309,7 @@ function DiscoverContent() {
 
       {/* ═══ TRENDING HASHTAGS (horizontal scroll) ═══ */}
       {allHashtags.length > 0 && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="Trending Topics" subtitle="Popular hashtags right now" />
           <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
             {allHashtags.map((h: any) => (
@@ -329,7 +329,7 @@ function DiscoverContent() {
 
       {/* ═══ POPULAR SERIES (Pratilipi-style book cards with ranks) ═══ */}
       {allSeries.length > 0 && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="Popular Series" subtitle="Multi-chapter stories to binge-read" href="/discover?tab=series" />
           <HScroll>
             {allSeries.slice(0, 8).map((s: any, i: number) => (
@@ -341,7 +341,7 @@ function DiscoverContent() {
 
       {/* ═══ TRENDING STORIES (featured hero + grid) ═══ */}
       {content.length > 0 && !activeType && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="Trending Stories" subtitle="What everyone is reading" href="/discover?type=STORY" />
           <div className="flex items-center gap-2 mb-4">
             <Flame className="w-4 h-4 text-orange-500" />
@@ -405,7 +405,7 @@ function DiscoverContent() {
       )}
 
       {/* ═══ CONTENT TYPE FILTERS + CONTENT GRID ═══ */}
-      <div className="px-4 lg:px-8">
+      <div className="px-4 lg:px-6">
         <div className="flex items-center justify-between mb-5">
           <Heading level={3} as="h2">Browse Content</Heading>
           <div className="flex items-center gap-1.5 text-xs text-warm-400">
@@ -625,7 +625,7 @@ function DiscoverContent() {
 
       {/* ═══ FEATURED WRITERS ═══ */}
       {writers.length > 0 && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="Featured Writers" subtitle="Discover talented creators" href="/writers" />
           <HScroll>
             {writers.map((w: any) => (
@@ -637,7 +637,7 @@ function DiscoverContent() {
 
       {/* ═══ THIS WEEK'S STARS (mini leaderboard) ═══ */}
       {weeklyStars.length > 0 && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="This Week's Stars" subtitle="Top performers this week" href="/leaderboard" actionLabel="Full Leaderboard" />
           <div className="bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-amber-950/10 dark:via-warm-900 dark:to-orange-950/10 rounded-2xl border border-amber-200/40 dark:border-amber-800/20 overflow-hidden">
             {weeklyStars.map((entry: any, i: number) => {
@@ -687,7 +687,7 @@ function DiscoverContent() {
 
       {/* ═══ NEW STORIES (BookCard horizontal scroll) ═══ */}
       {!activeType && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="New Stories" subtitle="Fresh narratives to explore" href="/discover?type=STORY" />
           <HScroll>
             {content.filter((c: any) => c.contentType === 'STORY').slice(0, 10).map((s: any) => (
@@ -699,7 +699,7 @@ function DiscoverContent() {
 
       {/* ═══ POEMS SECTION ═══ */}
       {!activeType && (
-        <div className="px-4 lg:px-8">
+        <div className="px-4 lg:px-6">
           <SectionHeader title="Poems" subtitle="Short reads, deep feelings" href="/discover?type=POEM" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {content.filter((c: any) => c.contentType === 'POEM').slice(0, 6).map((poem: any) => {
@@ -733,7 +733,7 @@ function DiscoverContent() {
       )}
 
       {/* ═══ FOOTER ═══ */}
-      <div className="px-4 lg:px-8 pt-4 pb-2 border-t border-warm-100 dark:border-warm-800">
+      <div className="px-4 lg:px-6 pt-4 pb-2 border-t border-warm-100 dark:border-warm-800">
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-warm-400">
           <Link href="/about" className="hover:text-primary transition-colors">About</Link>
           <Link href="/help" className="hover:text-primary transition-colors">Help & FAQ</Link>

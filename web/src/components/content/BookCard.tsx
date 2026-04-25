@@ -71,7 +71,7 @@ export function BookCard({ item, type = 'content', size = 'md', rank }: BookCard
         {/* Premium badge */}
         {item.isPremium && (
           <div className={cn(
-            "absolute bg-amber-500/90 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded",
+            "absolute bg-amber-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded",
             rank && rating ? "top-9 right-2" : "top-2 right-2"
           )}>
             PREMIUM

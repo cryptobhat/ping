@@ -44,7 +44,6 @@ export function Avatar({ src, name, size = 'md', className, border }: AvatarProp
 
   return (
     <div
-      title={name}
       className={cn(
         'rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center font-semibold select-none',
         sizes[size],
