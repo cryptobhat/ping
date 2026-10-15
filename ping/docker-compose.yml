@@ -1,0 +1,140 @@
+# Docker Compose configuration for Ping Messaging Backend
+# This sets up the complete development environment with:
+# - PostgreSQL database
+# - Redis cache
+# - The backend application
+
+version: '3.8'
+
+services:
+  # Backend application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ping
+    ports:
+      - "8080:8080"
+    environment:
+      # Server configuration
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - ENVIRONMENT=development
+      
+      # Database configuration
+      - DATABASE_DSN=postgresql://postgres:postgres@db:5432/ping?sslmode=disable
+      - DATABASE_MAX_CONNS=10
+      - DATABASE_MIN_CONNS=2
+      
+      # Redis configuration
+      - REDIS_ADDRESS=redis:6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      
+      # Security configuration
+      - JWT_SECRET=development-secret-change-in-production
+      - JWT_EXPIRATION_HOURS=24
+      - CORS_ORIGINS=*
+      
+      # Message configuration
+      - MAX_MESSAGE_SIZE=10485760
+      - MESSAGE_RETENTION_DAYS=30
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      # Mount source code for live reload in development
+      - .:/app
+      # Mount .env file if it exists
+      - ./.env:/app/.env:ro
+    command: sh -c "go run cmd/server/main.go"
+    networks:
+      - ping-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # PostgreSQL database
+  db:
+    image: postgres:16-alpine
+    container_name: ping-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ping
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ping-network
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: ping-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ping-network
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ping-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - ping-network
+    profiles:
+      - tools
+
+  # Optional: Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: ping-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - ping-network
+    profiles:
+      - tools
+
+# Networks
+networks:
+  ping-network:
+    driver: bridge
+
+# Volumes for persistent data
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
